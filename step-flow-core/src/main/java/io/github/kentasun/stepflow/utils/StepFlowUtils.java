@@ -62,7 +62,7 @@ public class StepFlowUtils {
 
     /**
      * 驼峰命名转下划线大写
-     * <p>例：userName -> USER_NAME
+     * <p>例：userName -> USER_NAME</p>
      */
     public static String humpToUpper(String str) {
         if (isBlank(str)) return str;
@@ -80,10 +80,10 @@ public class StepFlowUtils {
 
     /**
      * 比较两个字符串是否相等
-     * <p>特殊规则：
-     * <p>1. 如果两个字符串都为null，视为不相等
-     * <p>2. 如果只有一个字符串为null，视为不相等
-     * <p>3. 都不为null时，使用String.equals进行比对
+     * <p>特殊规则：</p>
+     * <p>1. 如果两个字符串都为null，视为不相等</p>
+     * <p>2. 如果只有一个字符串为null，视为不相等</p>
+     * <p>3. 都不为null时，使用String.equals进行比对</p>
      *
      * @param str1 字符串1
      * @param str2 字符串2

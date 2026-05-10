@@ -11,7 +11,7 @@ import lombok.Getter;
 
 /**
  * 条件判断 FlowNode。
- * <p>if (condition) {trueFlowNode} else {falseFlowNode}
+ * <p>if (condition) {trueFlowNode} else {falseFlowNode}</p>
  */
 public class IfElseFlowNode extends FlowNode {
 
