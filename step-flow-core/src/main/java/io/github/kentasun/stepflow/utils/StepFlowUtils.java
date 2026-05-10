@@ -108,8 +108,8 @@ public class StepFlowUtils {
      * @param key   参数 key
      * @param map   参数集合
      * @param clazz 参数期望类型
+     * @param <T>   参数期望类型
      * @return 参数对象
-     * @param <T> 参数期望类型
      */
     public static <T> T getValByMap(String key, Map<String, Object> map, Class<T> clazz) {
         return getValByMap(key, map, clazz, false);
@@ -122,8 +122,8 @@ public class StepFlowUtils {
      * @param map         参数集合
      * @param clazz       参数期望类型
      * @param isCheckNull 为 null 是否报错：true-报错；false-返回null。默认false
+     * @param <T>         参数期望类型
      * @return 参数对象
-     * @param <T> 参数期望类型
      */
     public static <T> T getValByMap(String key, Map<String, Object> map, Class<T> clazz, boolean isCheckNull) {
         Object o = map.get(key);
@@ -150,10 +150,10 @@ public class StepFlowUtils {
     /**
      * 默认值
      *
-     * @param object 目标对象
+     * @param object       目标对象
      * @param defaultValue 默认值对象
+     * @param <T>          目标对象的类型
      * @return 如果 {@code object} 不为 {@code null} 则返回 {@code object}；反之返回 {@code defaultValue}
-     * @param <T> 目标对象的类型
      */
     public static <T> T defaultIfNull(final T object, final T defaultValue) {
         return object != null ? object : defaultValue;
