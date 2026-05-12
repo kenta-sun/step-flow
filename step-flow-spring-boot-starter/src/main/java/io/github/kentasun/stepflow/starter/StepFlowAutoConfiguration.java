@@ -8,7 +8,6 @@ import io.github.kentasun.stepflow.engine.EngineCustomizer;
 import io.github.kentasun.stepflow.engine.ParamExpressionEngine;
 import io.github.kentasun.stepflow.flow.intf.FlowProvider;
 import io.github.kentasun.stepflow.step.intf.JavaStep;
-import io.github.kentasun.stepflow.step.intf.ReturnTypeConverter;
 import io.github.kentasun.stepflow.step.intf.StepDataProvider;
 import io.github.kentasun.stepflow.step.intf.StepHandler;
 import io.github.kentasun.stepflow.threadpool.StepFlowThreadPoolFactory;
@@ -50,7 +49,6 @@ public class StepFlowAutoConfiguration {
                                              StepFlowConfigProperties stepFlowConfigProperties,
                                              @Nullable Map<String, JavaStep> javaStepMap,
                                              @Nullable List<StepHandler> stepHandlerList,
-                                             @Nullable List<ReturnTypeConverter> returnTypeConverterList,
                                              @Qualifier("stepFlowParallelThreadPool") ExecutorService stepFlowParallelThreadPool,
                                              @Nullable ParamExpressionEngine paramExpressionEngine,
                                              @Nullable ConditionExpressionEngine conditionExpressionEngine,
@@ -62,7 +60,6 @@ public class StepFlowAutoConfiguration {
                 .configProperties(stepFlowConfigProperties)
                 .javaStepMap(javaStepMap)
                 .stepHandlerList(stepHandlerList)
-                .returnTypeConverterList(returnTypeConverterList)
                 .parallelThreadPool(stepFlowParallelThreadPool)
                 .paramExpressionEngine(paramExpressionEngine)
                 .conditionExpressionEngine(conditionExpressionEngine)

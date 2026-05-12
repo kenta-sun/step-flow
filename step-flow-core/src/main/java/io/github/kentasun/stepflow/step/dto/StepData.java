@@ -31,9 +31,6 @@ public class StepData {
     // 步骤内容
     private String content;
 
-    // 返回值类型
-    private String returnType;
-
     /*
      * 该步骤需要的参数名称列表
      * 表达式或javaMethod类型可以有参数。如果公共参数map中的名称不对，需要映射成该列表中的名称。
