@@ -21,11 +21,20 @@ public class StepExecutor {
 
     private final Map<String, Step> stepMap;
 
-    public StepExecutor(StepDataProvider stepDataProvider, Map<String, StepHandler> stepHandlerMap) {
+    public StepExecutor(StepDataProvider stepDataProvider, List<StepHandler> stepHandlers) {
+        /* 初始化 stepMap */
         this.stepMap = new ConcurrentHashMap<>();
+        /* 获取 step 数据 */
         List<StepData> stepDataList = null;
         if (stepDataProvider != null) {
             stepDataList = stepDataProvider.loadStepDataList();
+        }
+        /* 组装 stepHandlerMap，用于后续组装 step 对象 */
+        Map<String, StepHandler> stepHandlerMap = new HashMap<>();
+        if (StepFlowUtils.isNotEmpty(stepHandlers)) {
+            for (StepHandler stepHandler : stepHandlers) {
+                stepHandlerMap.put(stepHandler.getStepContentType(), stepHandler);
+            }
         }
         /* 组装 step 对象 */
         if (StepFlowUtils.isNotEmpty(stepDataList)) {

@@ -9,10 +9,12 @@ import io.github.kentasun.stepflow.exception.StepFlowException;
 import io.github.kentasun.stepflow.flow.FlowExecutor;
 import io.github.kentasun.stepflow.flow.intf.FlowProvider;
 import io.github.kentasun.stepflow.step.StepExecutor;
+import io.github.kentasun.stepflow.step.converter.*;
 import io.github.kentasun.stepflow.step.handler.ConstantStepHandler;
 import io.github.kentasun.stepflow.step.handler.ExpressionStepHandler;
 import io.github.kentasun.stepflow.step.handler.JavaStepHandler;
 import io.github.kentasun.stepflow.step.intf.JavaStep;
+import io.github.kentasun.stepflow.step.intf.ReturnTypeConverter;
 import io.github.kentasun.stepflow.step.intf.StepDataProvider;
 import io.github.kentasun.stepflow.step.intf.StepHandler;
 import io.github.kentasun.stepflow.threadpool.StepFlowThreadPoolFactory;
@@ -73,6 +75,8 @@ public class StepFlowExecutor {
 
         private List<StepHandler> stepHandlerList;
 
+        private List<ReturnTypeConverter> returnTypeConverterList;
+
         private ExecutorService parallelThreadPool;
 
         private ParamExpressionEngine paramExpressionEngine;
@@ -102,6 +106,11 @@ public class StepFlowExecutor {
 
         public Builder stepHandlerList(List<StepHandler> stepHandlerList) {
             this.stepHandlerList = stepHandlerList;
+            return this;
+        }
+
+        public Builder returnTypeConverterList(List<ReturnTypeConverter> returnTypeConverterList) {
+            this.returnTypeConverterList = returnTypeConverterList;
             return this;
         }
 
@@ -238,28 +247,42 @@ public class StepFlowExecutor {
          * 构建 {@link StepExecutor}，注册所有 StepHandler。
          */
         private StepExecutor buildStepExecutor() {
-            /* 创建 stepHandlerMap */
-            Map<String, StepHandler> stepHandlerMap = new HashMap<>();
-            /* 默认 StepHandler */
-            // 创建默认 StepHandler
-            ConstantStepHandler constantStepHandler = new ConstantStepHandler();
-            JavaStepHandler javaStepHandler = new JavaStepHandler(this.javaStepMap);
-            ExpressionStepHandler expressionStepHandler = new ExpressionStepHandler();
+            /* 类型转换器 */
+            // 先注册内置的类型转换器
+            List<ReturnTypeConverter> returnTypeConverters = this.buildDefaultConverters();
+            // 注册用户自定义转换器，同 returnType 时覆盖内置实现
+            if (StepFlowUtils.isNotEmpty(returnTypeConverterList)) {
+                returnTypeConverters.addAll(returnTypeConverterList);
+            }
 
-            // 存入 stepHandlerMap
-            stepHandlerMap.put(constantStepHandler.getStepContentType(), constantStepHandler);
-            stepHandlerMap.put(javaStepHandler.getStepContentType(), javaStepHandler);
-            stepHandlerMap.put(expressionStepHandler.getStepContentType(), expressionStepHandler);
-
-            /* 将传入的 stepHandler 存入 stepHandlerMap */
+            /* StepHandler */
+            // 先注册内置的 StepHandler
+            List<StepHandler> stepHandlers = new ArrayList<>(Arrays.asList(
+                    new ConstantStepHandler(returnTypeConverters),
+                    new JavaStepHandler(this.javaStepMap),
+                    new ExpressionStepHandler()
+            ));
+            // 注册用户自定义 StepHandler，同 StepContentType 时覆盖内置实现
             if (StepFlowUtils.isNotEmpty(stepHandlerList)) {
-                for (StepHandler stepHandler : stepHandlerList) {
-                    stepHandlerMap.put(stepHandler.getStepContentType(), stepHandler);
-                }
+                stepHandlers.addAll(stepHandlerList);
             }
 
             /* 创建 StepExecutor 对象并返回 */
-            return new StepExecutor(this.stepDataProvider, stepHandlerMap);
+            return new StepExecutor(this.stepDataProvider, stepHandlers);
+        }
+
+        /**
+         * 构建框架内置的 {@link ReturnTypeConverter} 列表。
+         */
+        private List<ReturnTypeConverter> buildDefaultConverters() {
+            return new ArrayList<>(Arrays.asList(
+                    new BigDecimalReturnTypeConverter(),
+                    new StringReturnTypeConverter(),
+                    new BooleanReturnTypeConverter(),
+                    new DateReturnTypeConverter(),
+                    new LocalDateTimeReturnTypeConverter(),
+                    new InstantReturnTypeConverter()
+            ));
         }
     }
 }

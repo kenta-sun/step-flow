@@ -5,7 +5,6 @@ import io.github.kentasun.stepflow.dto.DateCalcDTO;
 import io.github.kentasun.stepflow.flow.dto.InputFlow;
 import io.github.kentasun.stepflow.flow.intf.FlowProvider;
 import io.github.kentasun.stepflow.step.constants.StepContentType;
-import io.github.kentasun.stepflow.step.constants.StepReturnTypeEnum;
 import io.github.kentasun.stepflow.step.dto.StepData;
 import io.github.kentasun.stepflow.step.intf.StepDataProvider;
 import org.junit.jupiter.api.Assertions;
@@ -34,7 +33,6 @@ public class AviatorOracleExpressionTest {
                         .stepType("DATE")
                         .contentType(StepContentType.EXPRESSION)
                         .content("trunc(months_between(endDate, startDate), 4)")
-                        .returnType(StepReturnTypeEnum.DECIMAL.getTypeCode())
                         .paramNameList(Arrays.asList("endDate", "startDate"))
                         .build(),
                 // DC002: abs 取带负号数值的绝对值
@@ -44,7 +42,6 @@ public class AviatorOracleExpressionTest {
                         .stepType("DATE")
                         .contentType(StepContentType.EXPRESSION)
                         .content("abs(signedValue)")
-                        .returnType(StepReturnTypeEnum.DECIMAL.getTypeCode())
                         .paramNameList(Collections.singletonList("signedValue"))
                         .build(),
                 // DC003: IF_ELSE true 分支——floor 向下取整 * 本金 + ceil 向上取整
@@ -54,7 +51,6 @@ public class AviatorOracleExpressionTest {
                         .stepType("DATE")
                         .contentType(StepContentType.EXPRESSION)
                         .content("floor(calc_months_raw) * principal + ceil(rateInput * calc_abs_val)")
-                        .returnType(StepReturnTypeEnum.DECIMAL.getTypeCode())
                         .paramNameList(Arrays.asList("calc_months_raw", "principal", "rateInput", "calc_abs_val"))
                         .build(),
                 // DC004: IF_ELSE false 分支——round 四舍五入 * 本金 - floor 向下取整（本例不会执行）
@@ -64,7 +60,6 @@ public class AviatorOracleExpressionTest {
                         .stepType("DATE")
                         .contentType(StepContentType.EXPRESSION)
                         .content("round(calc_months_raw, 1) * principal - floor(rateInput * calc_abs_val)")
-                        .returnType(StepReturnTypeEnum.DECIMAL.getTypeCode())
                         .paramNameList(Arrays.asList("calc_months_raw", "principal", "rateInput", "calc_abs_val"))
                         .build(),
                 // DC005: 日期 + 1.5 天（1.5 天 = 36 小时），测试日期加小数
@@ -74,7 +69,6 @@ public class AviatorOracleExpressionTest {
                         .stepType("DATE")
                         .contentType(StepContentType.EXPRESSION)
                         .content("startDate + 1.5")
-                        .returnType(StepReturnTypeEnum.DATE.getTypeCode())
                         .paramNameList(Collections.singletonList("startDate"))
                         .build(),
                 // DC006: add_months 整月偏移（开始日期 + 6 个月）
@@ -84,7 +78,6 @@ public class AviatorOracleExpressionTest {
                         .stepType("DATE")
                         .contentType(StepContentType.EXPRESSION)
                         .content("add_months(startDate, 6)")
-                        .returnType(StepReturnTypeEnum.DATE.getTypeCode())
                         .paramNameList(Collections.singletonList("startDate"))
                         .build(),
                 // DC007: last_day 取结束日期所在月份的最后一天
@@ -94,7 +87,6 @@ public class AviatorOracleExpressionTest {
                         .stepType("DATE")
                         .contentType(StepContentType.EXPRESSION)
                         .content("last_day(endDate)")
-                        .returnType(StepReturnTypeEnum.DATE.getTypeCode())
                         .paramNameList(Collections.singletonList("endDate"))
                         .build(),
                 // DC008: 两个日期相减得到天数差（依赖 PARALLEL 中 calc_last_day，故在其后顺序执行）
@@ -104,7 +96,6 @@ public class AviatorOracleExpressionTest {
                         .stepType("DATE")
                         .contentType(StepContentType.EXPRESSION)
                         .content("calc_last_day - endDate")
-                        .returnType(StepReturnTypeEnum.DECIMAL.getTypeCode())
                         .paramNameList(Arrays.asList("calc_last_day", "endDate"))
                         .build(),
                 // DC009: decode + nvl + coalesce，extraFactor 为 null 时全部走 NULL 分支，结果 = 5
@@ -114,7 +105,6 @@ public class AviatorOracleExpressionTest {
                         .stepType("DATE")
                         .contentType(StepContentType.EXPRESSION)
                         .content("decode(nvl(extraFactor, 5), 5, coalesce(extraFactor, nvl(extraFactor, 5)), 0)")
-                        .returnType(StepReturnTypeEnum.DECIMAL.getTypeCode())
                         .paramNameList(Collections.singletonList("extraFactor"))
                         .build(),
                 // DC010: round + power 综合最终计算
@@ -125,7 +115,6 @@ public class AviatorOracleExpressionTest {
                         .stepType("DATE")
                         .contentType(StepContentType.EXPRESSION)
                         .content("round(calc_base + calc_date_diff * calc_extra - power(calc_extra, 2) / calc_abs_val, 2)")
-                        .returnType(StepReturnTypeEnum.DECIMAL.getTypeCode())
                         .paramNameList(Arrays.asList("calc_base", "calc_date_diff", "calc_extra", "calc_abs_val"))
                         .build()
         );

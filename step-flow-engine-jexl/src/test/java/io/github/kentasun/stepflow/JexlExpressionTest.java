@@ -5,7 +5,6 @@ import io.github.kentasun.stepflow.flow.dto.InputFlow;
 import io.github.kentasun.stepflow.flow.intf.FlowProvider;
 import io.github.kentasun.stepflow.javaMethod.ChooseRes;
 import io.github.kentasun.stepflow.step.constants.StepContentType;
-import io.github.kentasun.stepflow.step.constants.StepReturnTypeEnum;
 import io.github.kentasun.stepflow.step.dto.StepData;
 import io.github.kentasun.stepflow.step.intf.JavaStep;
 import io.github.kentasun.stepflow.step.intf.StepDataProvider;
@@ -13,7 +12,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class JexlExpressionTest {
@@ -27,7 +29,6 @@ public class JexlExpressionTest {
                         .stepType("COMMON")
                         .contentType(StepContentType.EXPRESSION)
                         .content("a + b")
-                        .returnType(StepReturnTypeEnum.DECIMAL.getTypeCode())
                         .paramNameList(Arrays.asList("a", "b"))
                         .build(),
                 StepData.builder()
@@ -36,7 +37,6 @@ public class JexlExpressionTest {
                         .stepType("COMMON")
                         .contentType(StepContentType.EXPRESSION)
                         .content("a - b")
-                        .returnType(StepReturnTypeEnum.DECIMAL.getTypeCode())
                         .paramNameList(Arrays.asList("a", "b"))
                         .build(),
                 StepData.builder()
@@ -45,7 +45,6 @@ public class JexlExpressionTest {
                         .stepType("COMMON")
                         .contentType(StepContentType.EXPRESSION)
                         .content("a * b")
-                        .returnType(StepReturnTypeEnum.DECIMAL.getTypeCode())
                         .paramNameList(Arrays.asList("a", "b"))
                         .build(),
                 StepData.builder()
@@ -54,7 +53,6 @@ public class JexlExpressionTest {
                         .stepType("COMMON")
                         .contentType(StepContentType.EXPRESSION)
                         .content("a / b")
-                        .returnType(StepReturnTypeEnum.DECIMAL.getTypeCode())
                         .paramNameList(Arrays.asList("a", "b"))
                         .build(),
                 StepData.builder()
@@ -63,7 +61,6 @@ public class JexlExpressionTest {
                         .stepType("JAVA")
                         .contentType(StepContentType.JAVA)
                         .content("chooseRes")
-                        .returnType(StepReturnTypeEnum.DECIMAL.getTypeCode())
                         .paramNameList(Arrays.asList("calc_multiply", "calc_divide"))
                         .build()
         );
