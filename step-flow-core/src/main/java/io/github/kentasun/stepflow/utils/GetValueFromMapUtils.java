@@ -318,7 +318,8 @@ public class GetValueFromMapUtils {
         List<Method> ret = new ArrayList<>();
         for (Method method : c.getMethods()) {
             int modifiers = method.getModifiers();
-            if (!Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)
+            if (!Modifier.isStatic(modifiers)
+                    && Modifier.isPublic(modifiers)
                     && methodName.equals(method.getName())) {
                 method.setAccessible(true);
                 ret.add(method);
