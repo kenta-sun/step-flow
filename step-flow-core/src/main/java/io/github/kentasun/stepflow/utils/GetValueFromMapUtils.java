@@ -268,6 +268,7 @@ public class GetValueFromMapUtils {
     private static Map<String, PropertyFoundResult> getClassPropertyResults(Class<?> clazz) {
         Reference<Map<String, PropertyFoundResult>> existsRef = cachedProperties.get(clazz);
         Map<String, PropertyFoundResult> results = Collections.emptyMap();
+
         if (existsRef == null) {
             clearCache(cachePropertyRq, cachedProperties);
             results = new ConcurrentHashMap<>();
@@ -283,40 +284,6 @@ public class GetValueFromMapUtils {
         }
         cachedProperties.remove(clazz, existsRef);
         return getClassPropertyResults(clazz);
-    }
-
-
-    /**
-     * 清理缓存中已被 GC 回收的软引用条目。
-     *
-     * <p>以 {@code rq.poll() != null} 作为 O(1) 的 GC 事件探针：仅当队列中存在
-     * 已入队的 {@link SoftReference} 时，才执行代价较高的 O(n) 全量缓存扫描，
-     * 避免在无 GC 事件时产生不必要的遍历开销。</p>
-     *
-     * <p>探针确认后，通过 {@code while} 循环将队列中所有已入队的
-     * {@link SoftReference} 对象排空，防止其在 {@link ReferenceQueue} 内持续
-     * 积压，造成 {@link SoftReference} 壳子对象本身无法被回收。随后遍历
-     * {@code cache}，移除 referent 已为 {@code null} 的失效条目。</p>
-     *
-     * @param rq    与缓存中 {@link SoftReference} 绑定的引用队列
-     * @param cache 待清理的缓存映射表
-     * @param <K>   缓存键类型
-     * @param <V>   缓存值类型（即 {@link SoftReference} 所包装的对象类型）
-     */
-    private static <K, V> void clearCache(ReferenceQueue<V> rq, ConcurrentHashMap<K, Reference<V>> cache) {
-        if (rq.poll() != null) {
-            // 该队列仅用来感知 GC，所以需要排空队列，释放所有已无用的 SoftReference 壳子对象
-            // 每次 rq.poll() 都会释放一个 SoftReference 并返回。直到 rq.poll() 返回null，表示全部释放完成。
-            //noinspection StatementWithEmptyBody
-            while (rq.poll() != null) {}
-            // 扫描缓存，移除 referent 已被 GC 回收的失效条目
-            for (Map.Entry<K, Reference<V>> e : cache.entrySet()) {
-                Reference<V> val = e.getValue();
-                if (val != null && val.get() == null) {
-                    cache.remove(e.getKey(), val);
-                }
-            }
-        }
     }
 
     private static List<Method> getInstanceMethods(Class<?> clazz, String methodName) {
@@ -355,6 +322,39 @@ public class GetValueFromMapUtils {
             }
         }
         return ret;
+    }
+
+    /**
+     * 清理缓存中已被 GC 回收的软引用条目。
+     *
+     * <p>以 {@code rq.poll() != null} 作为 O(1) 的 GC 事件探针：仅当队列中存在
+     * 已入队的 {@link SoftReference} 时，才执行代价较高的 O(n) 全量缓存扫描，
+     * 避免在无 GC 事件时产生不必要的遍历开销。</p>
+     *
+     * <p>探针确认后，通过 {@code while} 循环将队列中所有已入队的
+     * {@link SoftReference} 对象排空，防止其在 {@link ReferenceQueue} 内持续
+     * 积压，造成 {@link SoftReference} 壳子对象本身无法被回收。随后遍历
+     * {@code cache}，移除 referent 已为 {@code null} 的失效条目。</p>
+     *
+     * @param rq    与缓存中 {@link SoftReference} 绑定的引用队列
+     * @param cache 待清理的缓存映射表
+     * @param <K>   缓存键类型
+     * @param <V>   缓存值类型（即 {@link SoftReference} 所包装的对象类型）
+     */
+    private static <K, V> void clearCache(ReferenceQueue<V> rq, ConcurrentHashMap<K, Reference<V>> cache) {
+        if (rq.poll() != null) {
+            // 该队列仅用来感知 GC，所以需要排空队列，释放所有已无用的 SoftReference 壳子对象
+            // 每次 rq.poll() 都会释放一个 SoftReference 并返回。直到 rq.poll() 返回null，表示全部释放完成。
+            //noinspection StatementWithEmptyBody
+            while (rq.poll() != null) {}
+            // 扫描缓存，移除 referent 已被 GC 回收的失效条目
+            for (Map.Entry<K, Reference<V>> e : cache.entrySet()) {
+                Reference<V> val = e.getValue();
+                if (val != null && val.get() == null) {
+                    cache.remove(e.getKey(), val);
+                }
+            }
+        }
     }
 
     private static Object get(final Object a, final int index) {
