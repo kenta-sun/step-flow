@@ -244,8 +244,10 @@ public class GetValueFromMapUtils {
         }
 
         if (methods != null && !methods.isEmpty()) {
+            // 默认先取第一个作为兜底
             Method method = methods.get(0);
             for (Method m : methods) {
+                // 找到无参方法时，优先使用它
                 if (m.getParameterTypes().length == 0) {
                     method = m;
                     break;
