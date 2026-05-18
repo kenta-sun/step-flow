@@ -97,6 +97,14 @@ public class StepFlowUtils {
         return !isEmpty(collection);
     }
 
+    public static <T> boolean isEmpty(T[] array) {
+        return array == null || array.length == 0;
+    }
+
+    public static boolean isNotEmpty(Object[] array) {
+        return !isEmpty(array);
+    }
+
     public static Map<String, String> getParamNameMap(OneOffParams oneOffParams) {
         if (oneOffParams == null) return null;
         return oneOffParams.getParamNameMap();
