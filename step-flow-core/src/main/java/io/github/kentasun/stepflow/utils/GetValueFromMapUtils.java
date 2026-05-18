@@ -92,16 +92,22 @@ public class GetValueFromMapUtils {
                 } else if (val instanceof CharSequence) {
                     val = ((CharSequence) val).charAt(arrayIndex);
                 } else {
-                    throw new IllegalArgumentException("Can't access " + val + " with index `" + arrayIndex
-                            + "`, it's not an array, list or CharSequence");
+                    throw new IllegalArgumentException(String.format(
+                            "Can't access %s with index [%s], it's not an array, list or CharSequence",
+                            val,
+                            arrayIndex
+                    ));
                 }
             }
             if (keyIndex != null) {
                 if (Map.class.isAssignableFrom(val.getClass())) {
                     val = ((Map<?, ?>) val).get(keyIndex);
                 } else {
-                    throw new IllegalArgumentException(
-                            "Can't access " + val + " with key `" + keyIndex + "`, it's not a map");
+                    throw new IllegalArgumentException(String.format(
+                            "Can't access %s with key [%s], it's not a map",
+                            val,
+                            keyIndex
+                    ));
                 }
             }
 
@@ -125,24 +131,24 @@ public class GetValueFromMapUtils {
 
     private static Object getPropertyFromObject(Object obj, String name) {
         final Class<?> clazz = obj.getClass();
-        try {
-            Optional<MethodHandle> methodHandleOptional = GetterMethodsCacheUtils.getMethodHandleOptional(clazz, name);
-            if (methodHandleOptional.isPresent()) {
-                MethodHandle methodHandle = methodHandleOptional.get();
+        Optional<MethodHandle> methodHandleOptional = GetterMethodsCacheUtils.getMethodHandleOptional(clazz, name);
+        if (methodHandleOptional.isPresent()) {
+            MethodHandle methodHandle = methodHandleOptional.get();
+            try {
                 return methodHandle.invoke(obj);
-            } else {
-                throw new StepFlowException(String.format(
-                        "The getter method for the Property[%s] can not found in class[%s].",
-                        name,
-                        clazz.getName()
-                ));
+            } catch (Throwable e) {
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                } else {
+                    throw new RuntimeException(e);
+                }
             }
-        } catch (Throwable t) {
-            if (t instanceof RuntimeException) {
-                throw (RuntimeException) t;
-            } else {
-                throw new RuntimeException(t);
-            }
+        } else {
+            throw new StepFlowException(String.format(
+                    "The getter method for the Property[%s] can not found in class[%s].",
+                    name,
+                    clazz.getName()
+            ));
         }
     }
 
