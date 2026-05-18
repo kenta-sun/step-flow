@@ -19,6 +19,7 @@ Thumbs.db
 *.code-workspace
 ### IntelliJ IDEA ###
 .idea/
+.aiassistant/
 *.iws
 *.iml
 *.ipr
