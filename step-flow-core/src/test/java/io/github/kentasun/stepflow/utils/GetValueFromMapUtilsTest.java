@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
  *
  * @author kenta-sun
  */
-class GetValueFromMapUtilsTest {
+public class GetValueFromMapUtilsTest {
 
     /**
      * 构造单键测试用 env（Java 8 无 {@code Map#of}）。
