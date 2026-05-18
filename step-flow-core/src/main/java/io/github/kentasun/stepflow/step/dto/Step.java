@@ -48,6 +48,7 @@ public class Step {
                 String tempName = this.getTempName(paramName, paramNameMap);
                 // 不为空说明需要映射
                 if (StepFlowUtils.isNotBlank(tempName)) {
+                    //noinspection DataFlowIssue
                     if (tempName.contains(".")) {
                         // 说明存在`policyInfo.applyDate`类型的参数获取，需要调用表达式引擎的getParam方法
                         value = executorsContext.getParam(tempName, contextMap);

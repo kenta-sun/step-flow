@@ -21,7 +21,7 @@ public class GetValueFromMapUtils {
 
     private static final Pattern SPLIT_PAT = Pattern.compile("\\.");
 
-    public static Object getValueFromContextMap(Map<String, Object> env, String name) {
+    public static Object getValueFromContextMap(String name, Map<String, Object> env) {
         if (containsSymbol(name) && !env.containsKey(name)) {
             try {
                 return fastGetProperty(name, env);

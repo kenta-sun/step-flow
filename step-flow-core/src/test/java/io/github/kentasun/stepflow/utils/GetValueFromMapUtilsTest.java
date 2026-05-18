@@ -64,14 +64,14 @@ public class GetValueFromMapUtilsTest {
         @DisplayName("无点名称时直接 env.get")
         void directGetWithoutDot() {
             Map<String, Object> env = env("foo", 42);
-            assertEquals(42, GetValueFromMapUtils.getValueFromContextMap(env, "foo"));
+            assertEquals(42, GetValueFromMapUtils.getValueFromContextMap("foo", env));
         }
 
         @Test
         @DisplayName("键不存在时返回 null")
         void missingKeyReturnsNull() {
             Map<String, Object> env = new HashMap<>();
-            assertNull(GetValueFromMapUtils.getValueFromContextMap(env, "missing"));
+            assertNull(GetValueFromMapUtils.getValueFromContextMap("missing", env));
         }
 
         @Test
@@ -79,7 +79,7 @@ public class GetValueFromMapUtilsTest {
         void nullValueInEnv() {
             Map<String, Object> env = new HashMap<>();
             env.put("key", null);
-            assertNull(GetValueFromMapUtils.getValueFromContextMap(env, "key"));
+            assertNull(GetValueFromMapUtils.getValueFromContextMap("key", env));
         }
 
         @Test
@@ -89,7 +89,7 @@ public class GetValueFromMapUtilsTest {
             env.put("a.b", "literal");
             env.put("a", env("b", "navigated"));
 
-            assertEquals("literal", GetValueFromMapUtils.getValueFromContextMap(env, "a.b"));
+            assertEquals("literal", GetValueFromMapUtils.getValueFromContextMap("a.b", env));
         }
 
         @Test
@@ -98,7 +98,7 @@ public class GetValueFromMapUtilsTest {
             Map<String, Object> nested = env("inner", "deep");
             Map<String, Object> env = env("a", nested);
 
-            assertSame(nested, GetValueFromMapUtils.getValueFromContextMap(env, "a"));
+            assertSame(nested, GetValueFromMapUtils.getValueFromContextMap("a", env));
         }
 
         @Test
@@ -106,7 +106,7 @@ public class GetValueFromMapUtilsTest {
         void literalBracketKeyWithoutDot() {
             Map<String, Object> env = env("list[0]", "literal");
 
-            assertEquals("literal", GetValueFromMapUtils.getValueFromContextMap(env, "list[0]"));
+            assertEquals("literal", GetValueFromMapUtils.getValueFromContextMap("list[0]", env));
         }
     }
 
@@ -124,7 +124,7 @@ public class GetValueFromMapUtilsTest {
             Map<String, Object> inner = env("b", "value");
             Map<String, Object> env = env("a", inner);
 
-            assertEquals("value", GetValueFromMapUtils.getValueFromContextMap(env, "a.b"));
+            assertEquals("value", GetValueFromMapUtils.getValueFromContextMap("a.b", env));
         }
 
         @Test
@@ -134,7 +134,7 @@ public class GetValueFromMapUtilsTest {
             Map<String, Object> b = env("b", c);
             Map<String, Object> env = env("a", b);
 
-            assertEquals(99, GetValueFromMapUtils.getValueFromContextMap(env, "a.b.c"));
+            assertEquals(99, GetValueFromMapUtils.getValueFromContextMap("a.b.c", env));
         }
 
         @Test
@@ -143,7 +143,7 @@ public class GetValueFromMapUtilsTest {
             Map<String, Object> env = new HashMap<>();
             env.put("a", null);
 
-            assertNull(GetValueFromMapUtils.getValueFromContextMap(env, "a.b"));
+            assertNull(GetValueFromMapUtils.getValueFromContextMap("a.b", env));
         }
     }
 
@@ -161,7 +161,7 @@ public class GetValueFromMapUtilsTest {
             SampleBean bean = new SampleBean("Alice", true);
             Map<String, Object> env = env("user", bean);
 
-            assertEquals("Alice", GetValueFromMapUtils.getValueFromContextMap(env, "user.name"));
+            assertEquals("Alice", GetValueFromMapUtils.getValueFromContextMap("user.name", env));
         }
 
         @Test
@@ -170,7 +170,7 @@ public class GetValueFromMapUtilsTest {
             SampleBean bean = new SampleBean("bob", false);
             Map<String, Object> env = env("user", bean);
 
-            assertEquals(false, GetValueFromMapUtils.getValueFromContextMap(env, "user.active"));
+            assertEquals(false, GetValueFromMapUtils.getValueFromContextMap("user.active", env));
         }
 
         @Test
@@ -179,7 +179,7 @@ public class GetValueFromMapUtilsTest {
             IsFlagBean bean = new IsFlagBean(true);
             Map<String, Object> env = env("bean", bean);
 
-            assertEquals(true, GetValueFromMapUtils.getValueFromContextMap(env, "bean.isFlag"));
+            assertEquals(true, GetValueFromMapUtils.getValueFromContextMap("bean.isFlag", env));
         }
 
         @Test
@@ -188,7 +188,7 @@ public class GetValueFromMapUtilsTest {
             UrlBean bean = new UrlBean("https://example.com");
             Map<String, Object> env = env("res", bean);
 
-            assertEquals("https://example.com", GetValueFromMapUtils.getValueFromContextMap(env, "res.URL"));
+            assertEquals("https://example.com", GetValueFromMapUtils.getValueFromContextMap("res.URL", env));
         }
 
         @Test
@@ -197,7 +197,7 @@ public class GetValueFromMapUtilsTest {
             NestedBeanHolder holder = new NestedBeanHolder(new SampleBean("mixed", true));
             Map<String, Object> env = env("root", env("inner", holder));
 
-            assertEquals("mixed", GetValueFromMapUtils.getValueFromContextMap(env, "root.inner.bean.name"));
+            assertEquals("mixed", GetValueFromMapUtils.getValueFromContextMap("root.inner.bean.name", env));
         }
 
         @Test
@@ -205,7 +205,7 @@ public class GetValueFromMapUtilsTest {
         void missingBeanPropertyReturnsNull() {
             Map<String, Object> env = env("user", new SampleBean("x", true));
 
-            assertNull(GetValueFromMapUtils.getValueFromContextMap(env, "user.unknown"));
+            assertNull(GetValueFromMapUtils.getValueFromContextMap("user.unknown", env));
         }
 
         @Test
@@ -214,7 +214,7 @@ public class GetValueFromMapUtilsTest {
             OverloadedGetterBean bean = new OverloadedGetterBean();
             Map<String, Object> env = env("bean", bean);
 
-            assertEquals("no-arg", GetValueFromMapUtils.getValueFromContextMap(env, "bean.value"));
+            assertEquals("no-arg", GetValueFromMapUtils.getValueFromContextMap("bean.value", env));
         }
     }
 
@@ -232,7 +232,7 @@ public class GetValueFromMapUtilsTest {
             List<String> list = Arrays.asList("first", "second");
             Map<String, Object> env = env("list", list);
 
-            assertEquals("first", GetValueFromMapUtils.getValueFromContextMap(env, "list[0]"));
+            assertEquals("first", GetValueFromMapUtils.getValueFromContextMap("list[0]", env));
         }
 
         @Test
@@ -241,7 +241,7 @@ public class GetValueFromMapUtilsTest {
             List<String> list = Arrays.asList("first", "second");
             Map<String, Object> env = env("root", env("list", list));
 
-            assertEquals("first", GetValueFromMapUtils.getValueFromContextMap(env, "root.list[0]"));
+            assertEquals("first", GetValueFromMapUtils.getValueFromContextMap("root.list[0]", env));
         }
 
         @Test
@@ -250,7 +250,7 @@ public class GetValueFromMapUtilsTest {
             String[] arr = {"x", "y"};
             Map<String, Object> env = env("root", env("arr", arr));
 
-            assertEquals("x", GetValueFromMapUtils.getValueFromContextMap(env, "root.arr[0]"));
+            assertEquals("x", GetValueFromMapUtils.getValueFromContextMap("root.arr[0]", env));
         }
 
         @Test
@@ -259,7 +259,7 @@ public class GetValueFromMapUtilsTest {
             int[] arr = {10, 20};
             Map<String, Object> env = env("root", env("nums", arr));
 
-            assertEquals(10, GetValueFromMapUtils.getValueFromContextMap(env, "root.nums[0]"));
+            assertEquals(10, GetValueFromMapUtils.getValueFromContextMap("root.nums[0]", env));
         }
 
         @Test
@@ -268,7 +268,7 @@ public class GetValueFromMapUtilsTest {
             byte[] arr = {1, 2};
             Map<String, Object> env = env("root", env("bytes", arr));
 
-            assertEquals((byte) 1, GetValueFromMapUtils.getValueFromContextMap(env, "root.bytes[0]"));
+            assertEquals((byte) 1, GetValueFromMapUtils.getValueFromContextMap("root.bytes[0]", env));
         }
 
         @Test
@@ -276,7 +276,7 @@ public class GetValueFromMapUtilsTest {
         void charSequenceIndex() {
             Map<String, Object> env = env("root", env("text", "abc"));
 
-            assertEquals('a', GetValueFromMapUtils.getValueFromContextMap(env, "root.text[0]"));
+            assertEquals('a', GetValueFromMapUtils.getValueFromContextMap("root.text[0]", env));
         }
 
         @Test
@@ -286,7 +286,7 @@ public class GetValueFromMapUtilsTest {
             SampleBean b1 = new SampleBean("one", false);
             Map<String, Object> env = env("a", env("items", Arrays.asList(b0, b1)));
 
-            assertEquals("one", GetValueFromMapUtils.getValueFromContextMap(env, "a.items[1].name"));
+            assertEquals("one", GetValueFromMapUtils.getValueFromContextMap("a.items[1].name", env));
         }
 
         @Test
@@ -299,7 +299,7 @@ public class GetValueFromMapUtilsTest {
             // 通过 bean 持有 list，再用 .[0] 形式访问 list 本身较自然；此处测 a.list.[0]
             env.put("a", rootList);
 
-            assertEquals("only", GetValueFromMapUtils.getValueFromContextMap(env, "a.[0]"));
+            assertEquals("only", GetValueFromMapUtils.getValueFromContextMap("a.[0]", env));
         }
 
         @Test
@@ -307,7 +307,7 @@ public class GetValueFromMapUtilsTest {
         void invalidIndexTargetReturnsNull() {
             Map<String, Object> env = env("root", env("n", 42));
 
-            assertNull(GetValueFromMapUtils.getValueFromContextMap(env, "root.n[0]"));
+            assertNull(GetValueFromMapUtils.getValueFromContextMap("root.n[0]", env));
         }
     }
 
@@ -325,7 +325,7 @@ public class GetValueFromMapUtilsTest {
             Map<String, Object> dataMap = env("k1", "v1", "k2", "v2");
             Map<String, Object> env = env("data", dataMap);
 
-            assertEquals("v2", GetValueFromMapUtils.getValueFromContextMap(env, "data(k2)"));
+            assertEquals("v2", GetValueFromMapUtils.getValueFromContextMap("data(k2)", env));
         }
 
         @Test
@@ -334,7 +334,7 @@ public class GetValueFromMapUtilsTest {
             Map<String, Object> attrs = env("code", "ERR_001");
             Map<String, Object> env = env("a", env("attrs", attrs));
 
-            assertEquals("ERR_001", GetValueFromMapUtils.getValueFromContextMap(env, "a.attrs(code)"));
+            assertEquals("ERR_001", GetValueFromMapUtils.getValueFromContextMap("a.attrs(code)", env));
         }
 
         @Test
@@ -342,7 +342,7 @@ public class GetValueFromMapUtilsTest {
         void mapKeyOnNonMapReturnsNull() {
             Map<String, Object> env = env("wrap", env("x", "not-a-map"));
 
-            assertNull(GetValueFromMapUtils.getValueFromContextMap(env, "wrap.x(key)"));
+            assertNull(GetValueFromMapUtils.getValueFromContextMap("wrap.x(key)", env));
         }
     }
 
@@ -361,7 +361,7 @@ public class GetValueFromMapUtilsTest {
             inner.put("leaf", "v");
             Map<String, Object> env = env("mid", inner);
 
-            Object result = GetValueFromMapUtils.getValueFromContextMap(env, "mid");
+            Object result = GetValueFromMapUtils.getValueFromContextMap("mid", env);
             assertSame(inner, result);
         }
 
@@ -372,8 +372,8 @@ public class GetValueFromMapUtilsTest {
             double[] doubles = {1.5, 2.5};
             Map<String, Object> env = env("root", env("longs", longs, "doubles", doubles));
 
-            assertEquals(100L, GetValueFromMapUtils.getValueFromContextMap(env, "root.longs[0]"));
-            assertEquals(1.5, GetValueFromMapUtils.getValueFromContextMap(env, "root.doubles[0]"));
+            assertEquals(100L, GetValueFromMapUtils.getValueFromContextMap("root.longs[0]", env));
+            assertEquals(1.5, GetValueFromMapUtils.getValueFromContextMap("root.doubles[0]", env));
         }
 
         @Test
@@ -385,9 +385,9 @@ public class GetValueFromMapUtilsTest {
             Map<String, Object> root = env("shorts", shorts, "floats", floats, "strings", strings);
             Map<String, Object> env = env("root", root);
 
-            assertEquals((short) 3, GetValueFromMapUtils.getValueFromContextMap(env, "root.shorts[0]"));
-            assertEquals(1.1f, GetValueFromMapUtils.getValueFromContextMap(env, "root.floats[0]"));
-            assertEquals("s0", GetValueFromMapUtils.getValueFromContextMap(env, "root.strings[0]"));
+            assertEquals((short) 3, GetValueFromMapUtils.getValueFromContextMap("root.shorts[0]", env));
+            assertEquals(1.1f, GetValueFromMapUtils.getValueFromContextMap("root.floats[0]", env));
+            assertEquals("s0", GetValueFromMapUtils.getValueFromContextMap("root.strings[0]", env));
         }
 
         @Test
@@ -396,7 +396,7 @@ public class GetValueFromMapUtilsTest {
             boolean[] flags = {true, false};
             Map<String, Object> env = env("root", env("flags", flags));
 
-            assertEquals(true, GetValueFromMapUtils.getValueFromContextMap(env, "root.flags[0]"));
+            assertEquals(true, GetValueFromMapUtils.getValueFromContextMap("root.flags[0]", env));
         }
     }
 
