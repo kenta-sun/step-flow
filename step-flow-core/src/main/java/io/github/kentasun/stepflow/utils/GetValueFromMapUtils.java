@@ -86,7 +86,7 @@ public class GetValueFromMapUtils {
 
             if (arrayIndex >= 0) {
                 if (val.getClass().isArray()) {
-                    val = get(val, arrayIndex);
+                    val = getArrayElement(val, arrayIndex);
                 } else if (val instanceof List) {
                     val = ((List<?>) val).get(arrayIndex);
                 } else if (val instanceof CharSequence) {
@@ -156,7 +156,7 @@ public class GetValueFromMapUtils {
         return name.contains(".") || (name.contains("[") && name.contains("]")) || (name.contains("(") && name.contains(")"));
     }
 
-    private static Object get(final Object a, final int index) {
+    private static Object getArrayElement(final Object a, final int index) {
         if (a instanceof byte[]) {
             return ((byte[]) a)[index];
         } else if (a instanceof short[]) {
