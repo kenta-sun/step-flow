@@ -227,6 +227,15 @@ class GetValueFromMapUtilsTest {
     class IndexedAccess {
 
         @Test
+        @DisplayName("List 下标 list[0]")
+        void singleListIndex() {
+            List<String> list = Arrays.asList("first", "second");
+            Map<String, Object> env = env("list", list);
+
+            assertEquals("first", GetValueFromMapUtils.getValueFromContextMap(env, "list[0]"));
+        }
+
+        @Test
         @DisplayName("List 下标 root.list[0]")
         void listIndex() {
             List<String> list = Arrays.asList("first", "second");
