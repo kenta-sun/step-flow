@@ -60,8 +60,8 @@ public class Step {
             }
         }
 
-        /* 执行步骤 */
-        Object result = stepHandler.execute(
+        /* 执行步骤并返回 */
+        return stepHandler.execute(
                 stepData,
                 stepFlowContext,
                 OneOffParams.builder()
@@ -69,9 +69,6 @@ public class Step {
                         .build(),
                 executorsContext
         );
-
-        /* 返回结果 */
-        return result;
     }
 
     private String getTempName(String paramName, Map<String, String> map) {
