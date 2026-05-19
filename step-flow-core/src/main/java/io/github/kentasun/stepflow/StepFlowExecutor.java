@@ -127,7 +127,6 @@ public class StepFlowExecutor {
                     .stepExecutor(stepExecutor)
                     .flowExecutor(flowExecutor)
                     .stepFlowParallelThreadPool(parallelThreadPool)
-                    .expressionEngine(expressionEngine)
                     .build());
         }
 
@@ -156,7 +155,6 @@ public class StepFlowExecutor {
         private void setExpressionEngine() {
             // 若表达式引擎未显式设置，则通过 SPI 加载统一的 ExpressionEngineProvider
             if (this.expressionEngine == null) {
-
                 // 通过 SPI 发现引擎 Provider 实现，避免 core 直接依赖任何具体引擎库
                 AbstractExpressionEngineProvider provider = loadSpi();
 
@@ -166,10 +164,8 @@ public class StepFlowExecutor {
                 // 注入定制回调
                 provider.setEngineCustomizer(this.engineCustomizer);
 
-                // 仅填充尚未显式设置的表达式引擎，不覆盖用户手动设置的引擎
-                if (this.expressionEngine == null) {
-                    this.expressionEngine = provider.buildExpressionEngine();
-                }
+                // 创建引擎对象
+                this.expressionEngine = provider.buildExpressionEngine();
             }
         }
 
@@ -195,7 +191,7 @@ public class StepFlowExecutor {
             // 先注册内置的 StepHandler
             List<StepHandler> stepHandlers = new ArrayList<>(Arrays.asList(
                     new JavaStepHandler(this.javaStepMap),
-                    new ExpressionStepHandler()
+                    new ExpressionStepHandler(this.expressionEngine)
             ));
             // 注册用户自定义 StepHandler，同 StepContentType 时覆盖内置实现
             if (StepFlowUtils.isNotEmpty(stepHandlerList)) {

@@ -1,7 +1,6 @@
 package io.github.kentasun.stepflow.dto;
 
 import io.github.kentasun.stepflow.config.StepFlowConfigProperties;
-import io.github.kentasun.stepflow.engine.ExpressionEngine;
 import io.github.kentasun.stepflow.flow.FlowExecutor;
 import io.github.kentasun.stepflow.step.StepExecutor;
 import io.github.kentasun.stepflow.step.dto.Step;
@@ -28,8 +27,6 @@ public class ExecutorsContext {
     // 多个 FlowNode 多线程并发执行的线程池
     @Getter
     private final ExecutorService stepFlowParallelThreadPool;
-    // 表达式引擎
-    private final ExpressionEngine expressionEngine;
 
     /**
      * 执行步骤
@@ -52,17 +49,6 @@ public class ExecutorsContext {
      */
     public Map<String, Object> executeByFLowCode(final String flowCode, StepFlowContext stepFlowContext) {
         return flowExecutor.executeByFLowCode(flowCode, stepFlowContext, this);
-    }
-
-    /**
-     * 执行表达式
-     *
-     * @param expression 表达式
-     * @param vars 表达式参数
-     * @return 表达式结果
-     */
-    public Object executeExpression(String expression, Map<String, Object> vars) {
-        return expressionEngine.execute(expression, vars);
     }
 
     public Step getStep(String stepCode) {
