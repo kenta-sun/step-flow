@@ -2,8 +2,6 @@ package io.github.kentasun.stepflow.starter;
 
 import io.github.kentasun.stepflow.StepFlowExecutor;
 import io.github.kentasun.stepflow.config.StepFlowConfigProperties;
-import io.github.kentasun.stepflow.engine.ExpressionEngine;
-import io.github.kentasun.stepflow.engine.EngineCustomizer;
 import io.github.kentasun.stepflow.flow.intf.FlowProvider;
 import io.github.kentasun.stepflow.step.intf.JavaStep;
 import io.github.kentasun.stepflow.step.intf.StepDataProvider;
@@ -47,16 +45,12 @@ public class StepFlowAutoConfiguration {
                                              StepFlowConfigProperties stepFlowConfigProperties,
                                              @Nullable Map<String, JavaStep> javaStepMap,
                                              @Nullable List<StepHandler> stepHandlerList,
-                                             @Qualifier("stepFlowParallelThreadPool") ExecutorService stepFlowParallelThreadPool,
-                                             @Nullable ExpressionEngine expressionEngine,
-                                             @Nullable EngineCustomizer<?> engineCustomizer) {
+                                             @Qualifier("stepFlowParallelThreadPool") ExecutorService stepFlowParallelThreadPool) {
         return StepFlowExecutor.builder(stepDataProvider, flowProvider)
                 .configProperties(stepFlowConfigProperties)
                 .javaStepMap(javaStepMap)
                 .stepHandlerList(stepHandlerList)
                 .parallelThreadPool(stepFlowParallelThreadPool)
-                .expressionEngine(expressionEngine)
-                .engineCustomizer(engineCustomizer)
                 .build();
     }
 }

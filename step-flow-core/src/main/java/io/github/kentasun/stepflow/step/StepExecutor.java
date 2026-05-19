@@ -10,6 +10,8 @@ import io.github.kentasun.stepflow.step.intf.StepDataProvider;
 import io.github.kentasun.stepflow.step.intf.StepHandler;
 import io.github.kentasun.stepflow.utils.StepFlowJsonUtils;
 import io.github.kentasun.stepflow.utils.StepFlowUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * step 功能总入口
  */
 public class StepExecutor {
+
+    private static final Logger log = LoggerFactory.getLogger(StepExecutor.class);
 
     private final Map<String, Step> stepMap;
 
@@ -33,6 +37,9 @@ public class StepExecutor {
         Map<String, StepHandler> stepHandlerMap = new HashMap<>();
         if (StepFlowUtils.isNotEmpty(stepHandlers)) {
             for (StepHandler stepHandler : stepHandlers) {
+                if (stepHandlerMap.containsKey(stepHandler.getStepContentType())) {
+                    log.warn("StepHandler {} 被覆盖", stepHandler.getStepContentType());
+                }
                 stepHandlerMap.put(stepHandler.getStepContentType(), stepHandler);
             }
         }

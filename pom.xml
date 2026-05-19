@@ -36,9 +36,9 @@
     <!-- 模块声明 -->
     <modules>
         <module>step-flow-core</module>
-        <module>step-flow-engine-aviator</module>
-        <module>step-flow-engine-aviator-oracle</module>
-        <module>step-flow-engine-jexl</module>
+        <module>step-flow-handler-aviator</module>
+        <module>step-flow-handler-aviator-oracle</module>
+        <module>step-flow-handler-jexl</module>
         <module>step-flow-spring-boot-starter</module>
     </modules>
 
@@ -62,19 +62,19 @@
             <!-- Aviator 引擎插件包 -->
             <dependency>
                 <groupId>io.github.kenta-sun</groupId>
-                <artifactId>step-flow-engine-aviator</artifactId>
+                <artifactId>step-flow-handler-aviator</artifactId>
                 <version>${step-flow.version}</version>
             </dependency>
             <!-- Aviator 引擎插件包（Oracle 变体） -->
             <dependency>
                 <groupId>io.github.kenta-sun</groupId>
-                <artifactId>step-flow-engine-aviator-oracle</artifactId>
+                <artifactId>step-flow-handler-aviator-oracle</artifactId>
                 <version>${step-flow.version}</version>
             </dependency>
             <!-- JEXL 引擎插件包 -->
             <dependency>
                 <groupId>io.github.kenta-sun</groupId>
-                <artifactId>step-flow-engine-jexl</artifactId>
+                <artifactId>step-flow-handler-jexl</artifactId>
                 <version>${step-flow.version}</version>
             </dependency>
             <!-- Jackson -->

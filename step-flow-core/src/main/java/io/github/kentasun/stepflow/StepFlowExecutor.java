@@ -3,12 +3,10 @@ package io.github.kentasun.stepflow;
 import io.github.kentasun.stepflow.config.StepFlowConfigProperties;
 import io.github.kentasun.stepflow.dto.ExecutorsContext;
 import io.github.kentasun.stepflow.dto.StepFlowContext;
-import io.github.kentasun.stepflow.engine.*;
-import io.github.kentasun.stepflow.exception.StepFlowException;
+import io.github.kentasun.stepflow.engine.AbstractStepHandlerProvider;
 import io.github.kentasun.stepflow.flow.FlowExecutor;
 import io.github.kentasun.stepflow.flow.intf.FlowProvider;
 import io.github.kentasun.stepflow.step.StepExecutor;
-import io.github.kentasun.stepflow.step.handler.ExpressionStepHandler;
 import io.github.kentasun.stepflow.step.handler.JavaStepHandler;
 import io.github.kentasun.stepflow.step.intf.JavaStep;
 import io.github.kentasun.stepflow.step.intf.StepDataProvider;
@@ -73,10 +71,6 @@ public class StepFlowExecutor {
 
         private ExecutorService parallelThreadPool;
 
-        private ExpressionEngine expressionEngine;
-
-        private EngineCustomizer<?> engineCustomizer;
-
         public Builder(StepDataProvider stepDataProvider, FlowProvider flowProvider) {
             this.stepDataProvider = stepDataProvider;
             this.flowProvider = flowProvider;
@@ -102,21 +96,9 @@ public class StepFlowExecutor {
             return this;
         }
 
-        public Builder expressionEngine(ExpressionEngine expressionEngine) {
-            this.expressionEngine = expressionEngine;
-            return this;
-        }
-
-        public Builder engineCustomizer(EngineCustomizer<?> engineCustomizer) {
-            this.engineCustomizer = engineCustomizer;
-            return this;
-        }
-
         public StepFlowExecutor build() {
             // 给一些Bean设置默认实现
             this.setDefaultBean();
-            // 设置表达式引擎
-            this.setExpressionEngine();
             // 构建 step 执行器
             StepExecutor stepExecutor = this.buildStepExecutor();
             // 构建 flow 执行器
@@ -150,37 +132,15 @@ public class StepFlowExecutor {
         }
 
         /**
-         * 设置表达式引擎
-         */
-        private void setExpressionEngine() {
-            // 若表达式引擎未显式设置，则通过 SPI 加载统一的 ExpressionEngineProvider
-            if (this.expressionEngine == null) {
-                // 通过 SPI 发现引擎 Provider 实现，避免 core 直接依赖任何具体引擎库
-                AbstractExpressionEngineProvider provider = loadSpi();
-
-                // 从 configProperties 中读取表达式引擎的独立配置，分别传入
-                provider.setEngineProperties(configProperties.getEngineProperties());
-
-                // 注入定制回调
-                provider.setEngineCustomizer(this.engineCustomizer);
-
-                // 创建引擎对象
-                this.expressionEngine = provider.buildExpressionEngine();
-            }
-        }
-
-        /**
-         * 通过 Java SPI 加载 {@link AbstractExpressionEngineProvider} 的第一个实现类。
+         * 通过 Java SPI 加载 {@link AbstractStepHandlerProvider} 的所有实现类。
          *
-         * @return {@link AbstractExpressionEngineProvider} 的第一个可用的实现实例
-         * @throws StepFlowException 若 classpath 上没有任何实现时，抛出含引导信息的异常
+         * @return {@link AbstractStepHandlerProvider} 的实例列表
          */
-        private AbstractExpressionEngineProvider loadSpi() {
-            Iterator<AbstractExpressionEngineProvider> it = ServiceLoader.load(AbstractExpressionEngineProvider.class).iterator();
-            if (it.hasNext()) {
-                return it.next();
-            }
-            throw new StepFlowException("No [engine.io.github.kentasun.stepflow.AbstractExpressionEngineProvider] implementation found on classpath.");
+        private List<AbstractStepHandlerProvider> loadSpi() {
+            Iterator<AbstractStepHandlerProvider> it = ServiceLoader.load(AbstractStepHandlerProvider.class).iterator();
+            List<AbstractStepHandlerProvider> list = new ArrayList<>();
+            it.forEachRemaining(list::add);
+            return list;
         }
 
         /**
@@ -189,10 +149,12 @@ public class StepFlowExecutor {
         private StepExecutor buildStepExecutor() {
             /* StepHandler */
             // 先注册内置的 StepHandler
-            List<StepHandler> stepHandlers = new ArrayList<>(Arrays.asList(
-                    new JavaStepHandler(this.javaStepMap),
-                    new ExpressionStepHandler(this.expressionEngine)
-            ));
+            JavaStepHandler javaStepHandler = new JavaStepHandler(this.javaStepMap);
+            List<StepHandler> stepHandlers = new ArrayList<>();
+            stepHandlers.add(javaStepHandler);
+            // 通过 SPI 加载 StepHandler，同 StepContentType 时覆盖内置实现
+            List<AbstractStepHandlerProvider> provider = loadSpi();
+            provider.forEach(p -> stepHandlers.add(p.buildStepHandler()));
             // 注册用户自定义 StepHandler，同 StepContentType 时覆盖内置实现
             if (StepFlowUtils.isNotEmpty(stepHandlerList)) {
                 stepHandlers.addAll(stepHandlerList);
