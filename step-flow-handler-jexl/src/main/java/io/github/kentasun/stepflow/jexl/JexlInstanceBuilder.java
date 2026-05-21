@@ -34,20 +34,20 @@ public final class JexlInstanceBuilder {
         }
 
         /* 缓存大小 */
-        int cacheSize = defaultIfNull(config.getMaxExpressionCache(), 2048);
+        int cache = defaultIfNull(config.getCache(), 2048);
 
         /* 严格算术逻辑：全部有效位数60位，四舍五入，小数位数40位 */
         JexlArithmetic arithmetic = new JexlArithmetic(true, new MathContext(60, RoundingMode.HALF_UP), 40);
 
         /* 构建 JexlBuilder */
         JexlBuilder builder = new JexlBuilder()
-                .cache(cacheSize) // 缓存大小：缓存已解析的表达式
+                .cache(cache) // 缓存大小：缓存已解析的表达式
                 .strict(true) // 严格模式: true-遇到未定义的变量或属性访问错误时抛出异常；false-返回 null
                 .silent(false) // 静默模式: true-发生错误时返回null并记录日志；false-发生错误时直接抛出异常
                 .permissions(JexlPermissions.UNRESTRICTED) // UNRESTRICTED模式，允许new对象、反射等
                 .sandbox(new JexlSandbox(true)) // 黑名单沙箱。true-黑单模式
                 .arithmetic(arithmetic) // 配置严格算术逻辑
-                .debug(defaultIfNull(config.getLogEnabled(), Boolean.FALSE));
+                .debug(defaultIfNull(config.getDebug(), Boolean.FALSE));
 
         /* 自定义配置 */
         if (customizer != null) {

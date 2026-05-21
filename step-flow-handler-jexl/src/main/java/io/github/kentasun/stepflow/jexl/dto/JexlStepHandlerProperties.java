@@ -17,15 +17,10 @@ public class JexlStepHandlerProperties {
     /**
      * 表达式缓存最大条数。
      */
-    private Integer maxExpressionCache;
-
-    /**
-     * 脚本最大循环次数，防止死循环耗尽线程资源。
-     */
-    private Integer maxLoopCount;
+    private Integer cache;
 
     /**
      * 是否开启引擎调试日志
      */
-    private Boolean logEnabled;
+    private Boolean debug;
 }

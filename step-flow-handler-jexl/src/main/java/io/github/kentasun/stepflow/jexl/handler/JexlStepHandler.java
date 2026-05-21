@@ -39,8 +39,8 @@ public class JexlStepHandler implements StepHandler {
         if (config == null) {
             config = new JexlStepHandlerProperties();
         }
-        if (config.getMaxExpressionCache() == null) {
-            config.setMaxExpressionCache(2048);
+        if (config.getCache() == null) {
+            config.setCache(2048);
         }
         this.jexl = JexlInstanceBuilder.buildJexlEngine(config, customizer);
     }
