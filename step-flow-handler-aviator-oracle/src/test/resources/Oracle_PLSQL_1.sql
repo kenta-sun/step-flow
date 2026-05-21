@@ -87,7 +87,7 @@ ELSE
         DBMS_OUTPUT.PUT_LINE('calc_base (false 分支) = ' || v_calc_base);
 END IF;
 
-    -- [ 节点3: FLOW 子流程 CALC_DATE_SUB ]
+    -- [ 节点3: SUB_FLOW 子流程 CALC_DATE_SUB ]
     -- ---- Sub-Flow 内部: SEQUENCE ----
     -- Sub-Flow 节点1: PARALLEL 并行执行 3 个日期步骤
 

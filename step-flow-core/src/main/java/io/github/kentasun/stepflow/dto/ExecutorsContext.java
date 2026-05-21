@@ -39,7 +39,7 @@ public class ExecutorsContext {
      * @return 步骤执行结果
      */
     public Object executeByStepCode(final String stepCode, StepFlowContext stepFlowContext, OneOffParams oneOffParams) {
-        return stepExecutor.executeByStepCode(stepCode, stepFlowContext, oneOffParams, this);
+        return stepExecutor.executeByStepCode(stepCode, stepFlowContext, oneOffParams);
     }
 
     /**

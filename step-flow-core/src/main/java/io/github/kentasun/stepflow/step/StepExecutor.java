@@ -1,6 +1,5 @@
 package io.github.kentasun.stepflow.step;
 
-import io.github.kentasun.stepflow.dto.ExecutorsContext;
 import io.github.kentasun.stepflow.api.dto.OneOffParams;
 import io.github.kentasun.stepflow.api.dto.StepFlowContext;
 import io.github.kentasun.stepflow.exception.StepFlowException;
@@ -88,10 +87,9 @@ public class StepExecutor {
      * @param stepCode        步骤代码
      * @param stepFlowContext 上下文对象
      * @param oneOffParams    1次性参数，仅供当前 step 使用
-     * @param executorsContext 用于随着上下文一起传递的各种执行器
      * @return 步骤执行结果
      */
-    public Object executeByStepCode(final String stepCode, StepFlowContext stepFlowContext, OneOffParams oneOffParams, ExecutorsContext executorsContext) {
+    public Object executeByStepCode(final String stepCode, StepFlowContext stepFlowContext, OneOffParams oneOffParams) {
         Step step = stepMap.get(stepCode);
         if (step == null) {
             throw new StepFlowException(String.format("【%s】步骤不存在", stepCode));

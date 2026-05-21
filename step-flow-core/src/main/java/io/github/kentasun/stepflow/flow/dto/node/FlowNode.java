@@ -1,12 +1,13 @@
 package io.github.kentasun.stepflow.flow.dto.node;
 
-import io.github.kentasun.stepflow.dto.ExecutorsContext;
-import io.github.kentasun.stepflow.api.dto.StepFlowContext;
-import io.github.kentasun.stepflow.flow.dto.FlowNodeValidateContext;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.github.kentasun.stepflow.api.dto.StepFlowContext;
+import io.github.kentasun.stepflow.dto.ExecutorsContext;
+import io.github.kentasun.stepflow.flow.constants.FlowContentType;
+import io.github.kentasun.stepflow.flow.dto.FlowNodeValidateContext;
 import lombok.Getter;
 
 /**
@@ -19,11 +20,11 @@ import lombok.Getter;
         visible = true
 )
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = StepFlowNode.class, name = "STEP"),
-        @JsonSubTypes.Type(value = SubFlowNode.class, name = "FLOW"),
-        @JsonSubTypes.Type(value = SequenceFlowNode.class, name = "SEQUENCE"),
-        @JsonSubTypes.Type(value = ParallelFlowNode.class, name = "PARALLEL"),
-        @JsonSubTypes.Type(value = IfElseFlowNode.class, name = "IF_ELSE")
+        @JsonSubTypes.Type(value = StepFlowNode.class, name = FlowContentType.STEP),
+        @JsonSubTypes.Type(value = SubFlowNode.class, name = FlowContentType.SUB_FLOW),
+        @JsonSubTypes.Type(value = SequenceFlowNode.class, name = FlowContentType.SEQUENCE),
+        @JsonSubTypes.Type(value = ParallelFlowNode.class, name = FlowContentType.PARALLEL),
+        @JsonSubTypes.Type(value = IfElseFlowNode.class, name = FlowContentType.IF_ELSE)
         // 添加2种循环的 flow
 })
 public abstract class FlowNode {

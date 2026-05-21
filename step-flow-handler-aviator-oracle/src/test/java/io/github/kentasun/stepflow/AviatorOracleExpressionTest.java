@@ -153,7 +153,7 @@ public class AviatorOracleExpressionTest {
                         .build(),
 
                 // ---- 主流程 CALC_DATE_MAIN ----
-                // 覆盖全部 5 种 FlowNode 类型：SEQUENCE / PARALLEL / IF_ELSE / FLOW / STEP
+                // 覆盖全部 5 种 FlowNode 类型：SEQUENCE / PARALLEL / IF_ELSE / SUB_FLOW / STEP
                 InputFlow.builder()
                         .flowCode("CALC_DATE_MAIN")
                         .flowName("主流程-贷款期限与费用计算")
@@ -174,8 +174,8 @@ public class AviatorOracleExpressionTest {
                                 + "\"paramNameMap\":{\"principal\":\"dto.principal\",\"rateInput\":\"dto.rateInput\"}},"
                                 + "\"falseFlowNode\":{\"type\":\"STEP\",\"stepCode\":\"DC004\","
                                 + "\"paramNameMap\":{\"principal\":\"dto.principal\",\"rateInput\":\"dto.rateInput\"}}},"
-                                // [FLOW] 调用子流程执行日期相关计算（add_months / last_day / 日期相减）
-                                + "{\"type\":\"FLOW\",\"flowCode\":\"CALC_DATE_SUB\"},"
+                                // [SUB_FLOW] 调用子流程执行日期相关计算（add_months / last_day / 日期相减）
+                                + "{\"type\":\"SUB_FLOW\",\"flowCode\":\"CALC_DATE_SUB\"},"
                                 // [STEP] decode + nvl + coalesce，extraFactor 为 null 时结果 = 5
                                 + "{\"type\":\"STEP\",\"stepCode\":\"DC009\","
                                 + "\"paramNameMap\":{\"extraFactor\":\"dto.extraFactor\"}},"
