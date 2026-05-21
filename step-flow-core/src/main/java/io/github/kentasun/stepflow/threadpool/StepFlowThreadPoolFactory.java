@@ -44,7 +44,7 @@ public class StepFlowThreadPoolFactory {
                 StepFlowUtils.defaultIfNull(properties.getUnit(), TimeUnit.SECONDS),
                 new LinkedBlockingDeque<>(StepFlowUtils.defaultIfNull(properties.getWorkQueueSize(), 10000)),
                 threadFactory,
-                StepFlowUtils.defaultIfNull(properties.getRejectedHandler(), new ThreadPoolExecutor.DiscardOldestPolicy())
+                StepFlowUtils.defaultIfNull(properties.getRejectedHandler(), new ThreadPoolExecutor.CallerRunsPolicy())
         );
     }
 }
