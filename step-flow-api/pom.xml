@@ -12,14 +12,4 @@
     <artifactId>step-flow-api</artifactId>
     <name>step-flow-api</name>
     <description>Public API for step-flow.</description>
-
-    <dependencies>
-        <!-- Lombok：后续迁入的 DTO 等可复用，与 core 保持一致 -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
 </project>
