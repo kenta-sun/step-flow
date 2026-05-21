@@ -21,7 +21,6 @@ public class IfElseFlowNode extends FlowNode {
     @JsonSetter(nulls = Nulls.FAIL)
     private final FlowNode trueFlowNode;
 
-    @JsonSetter(nulls = Nulls.FAIL)
     private final FlowNode falseFlowNode;
 
     @JsonCreator
@@ -49,7 +48,10 @@ public class IfElseFlowNode extends FlowNode {
         if (isTrue) {
             trueFlowNode.execute(stepFlowContext, executorsContext);
         } else {
-            falseFlowNode.execute(stepFlowContext, executorsContext);
+            // falseFlowNode 为null表示不需要任何操作
+            if (falseFlowNode != null) {
+                falseFlowNode.execute(stepFlowContext, executorsContext);
+            }
         }
     }
 
