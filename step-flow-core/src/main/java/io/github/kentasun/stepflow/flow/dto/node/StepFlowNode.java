@@ -120,4 +120,18 @@ public class StepFlowNode extends FlowNode {
     public String getStepCode() {
         return this.stepCode;
     }
+
+    /**
+     * 供 Jackson 序列化及调试输出使用；无映射时返回 {@code null}，与 JSON content 中省略该字段的语义一致。
+     */
+    public Map<String, String> getParamNameMap() {
+        return this.paramNameMap;
+    }
+
+    /**
+     * 供 Jackson 序列化及调试输出使用；无映射时返回 {@code null}。
+     */
+    public Map<String, String> getResultNameMap() {
+        return this.resultNameMap;
+    }
 }
