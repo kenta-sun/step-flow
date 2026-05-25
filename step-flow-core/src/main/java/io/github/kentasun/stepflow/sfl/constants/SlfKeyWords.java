@@ -1,10 +1,12 @@
 package io.github.kentasun.stepflow.sfl.constants;
 
+import io.github.kentasun.stepflow.sfl.parser.KeywordResolver;
+
 /**
  * SFL（Step Flow Language）语法关键字字面量常量集。
  * <p>
  * 取值与源文本中的标识符完全一致，供 {@link io.github.kentasun.stepflow.sfl.SflSyntaxParser}
- * 注册表及各 {@link io.github.kentasun.stepflow.sfl.parser.KeywordParser} 实现统一引用，
+ * 注册表及各 {@link KeywordResolver} 实现统一引用，
  * 避免魔法字符串分散在解析逻辑中。
  * </p>
  */

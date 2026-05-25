@@ -13,7 +13,7 @@ import io.github.kentasun.stepflow.sfl.SflTokenType;
  * 括号内只允许出现单一标识符作为子流程编码，不支持嵌套 flow 语法。
  * </p>
  */
-public class SubFlowKeywordParser implements KeywordParser {
+public class SubFlowKeywordResolver implements KeywordResolver {
 
     @Override
     public FlowNode parse(SflSyntaxParser parser, int keywordPos) {

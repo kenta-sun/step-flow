@@ -13,11 +13,11 @@ import java.util.Map;
 /**
  * SFL 语法分析器：基于 {@link SflLexer} 的记号流，用递归下降将编排文本构造成 {@link FlowNode} 树。
  * <p>
- * 每个顶层关键字通过 {@link #KEYWORD_PARSERS} 策略注册表分发给对应的 {@link KeywordParser} 实现，
- * 避免 switch-case 扩张并完全消除反射。新增关键字只需实现 {@link KeywordParser} 并在注册表中添加一行。
+ * 每个顶层关键字通过 {@link #KEYWORD_PARSERS} 策略注册表分发给对应的 {@link KeywordResolver} 实现，
+ * 避免 switch-case 扩张并完全消除反射。新增关键字只需实现 {@link KeywordResolver} 并在注册表中添加一行。
  * </p>
  * <p>
- * 容器节点（SEQ、PARALLEL）分别由 {@link SeqKeywordParser} / {@link ParallelKeywordParser} 构建，
+ * 容器节点（SEQ、PARALLEL）分别由 {@link SeqKeywordResolver} / {@link ParallelKeywordResolver} 构建，
  * 直接 new 对象，不再通过反射调用 protected 构造器。
  * </p>
  * <p>
@@ -34,15 +34,15 @@ public class SflSyntaxParser {
      * 扩展时在此添加新条目，无需修改 {@link #parseFlow()} 主逻辑。
      * </p>
      */
-    private static final Map<String, KeywordParser> KEYWORD_PARSERS;
+    private static final Map<String, KeywordResolver> KEYWORD_PARSERS;
 
     static {
-        Map<String, KeywordParser> map = new HashMap<>();
-        map.put(SlfKeyWords.SEQ,        new SeqKeywordParser());
-        map.put(SlfKeyWords.PARALLEL,   new ParallelKeywordParser());
-        map.put(SlfKeyWords.STEP,       new StepKeywordParser());
-        map.put(SlfKeyWords.SUB_FLOW,   new SubFlowKeywordParser());
-        map.put(SlfKeyWords.IF,         new IfKeywordParser());
+        Map<String, KeywordResolver> map = new HashMap<>();
+        map.put(SlfKeyWords.SEQ,        new SeqKeywordResolver());
+        map.put(SlfKeyWords.PARALLEL,   new ParallelKeywordResolver());
+        map.put(SlfKeyWords.STEP,       new StepKeywordResolver());
+        map.put(SlfKeyWords.SUB_FLOW,   new SubFlowKeywordResolver());
+        map.put(SlfKeyWords.IF,         new IfKeywordResolver());
         KEYWORD_PARSERS = Collections.unmodifiableMap(map);
     }
 
@@ -75,17 +75,17 @@ public class SflSyntaxParser {
         SflToken ident = expect(SflTokenType.IDENT);
         String keyword = ident.getText();
 
-        KeywordParser keywordParser = KEYWORD_PARSERS.get(keyword);
-        if (keywordParser == null) {
+        KeywordResolver keywordResolver = KEYWORD_PARSERS.get(keyword);
+        if (keywordResolver == null) {
             throw new SflException("未知的关键字 [" + keyword + "]，位置: " + ident.getPosition());
         }
-        return keywordParser.parse(this, ident.getPosition());
+        return keywordResolver.parse(this, ident.getPosition());
     }
 
     /**
      * 消费并校验下一个 token 的类型。
      * <p>
-     * 同时供各 {@link KeywordParser} 实现调用；包内可见（package-private）。
+     * 同时供各 {@link KeywordResolver} 实现调用；包内可见（package-private）。
      * </p>
      *
      * @param type 期望的记号类型，通常为 {@link SflTokenType#EOF}
@@ -103,7 +103,7 @@ public class SflSyntaxParser {
     }
 
     /**
-     * 返回当前前瞻 token，不消费。供各 {@link KeywordParser} 实现判断后续记号类型。
+     * 返回当前前瞻 token，不消费。供各 {@link KeywordResolver} 实现判断后续记号类型。
      *
      * @return 当前前瞻记号
      */
@@ -113,7 +113,7 @@ public class SflSyntaxParser {
 
     /**
      * 消费并返回当前 token，不做类型校验。
-     * 用于 {@link KeywordParser} 实现在已知下一个 token 类型时直接跳过（如 '.' 分隔符）。
+     * 用于 {@link KeywordResolver} 实现在已知下一个 token 类型时直接跳过（如 '.' 分隔符）。
      *
      * @return 被消费的记号
      */
@@ -124,7 +124,7 @@ public class SflSyntaxParser {
     /**
      * 解析逗号分隔的子 flow 列表，至少包含一项；拒绝空列表与尾随逗号。
      * <p>
-     * 供 {@link SeqKeywordParser}、{@link ParallelKeywordParser} 及 IF 分支解析共享。
+     * 供 {@link SeqKeywordResolver}、{@link ParallelKeywordResolver} 及 IF 分支解析共享。
      * </p>
      *
      * @return 子节点列表，顺序与源文本一致，至少含一项

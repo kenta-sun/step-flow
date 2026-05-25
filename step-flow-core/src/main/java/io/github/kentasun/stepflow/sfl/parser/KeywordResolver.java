@@ -16,7 +16,7 @@ import io.github.kentasun.stepflow.sfl.SflSyntaxParser;
  * </p>
  */
 @FunctionalInterface
-public interface KeywordParser {
+public interface KeywordResolver {
 
     /**
      * 解析关键字之后的语法片段，返回对应的流程节点。

@@ -21,7 +21,7 @@ import java.util.Map;
  * 重复声明（如两次 .param）在解析期即失败。
  * </p>
  */
-public class StepKeywordParser implements KeywordParser {
+public class StepKeywordResolver implements KeywordResolver {
 
     @Override
     public FlowNode parse(SflSyntaxParser parser, int keywordPos) {

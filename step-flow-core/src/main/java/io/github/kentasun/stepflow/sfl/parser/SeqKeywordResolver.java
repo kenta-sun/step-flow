@@ -2,20 +2,20 @@ package io.github.kentasun.stepflow.sfl.parser;
 
 import io.github.kentasun.stepflow.flow.constants.FlowContentType;
 import io.github.kentasun.stepflow.flow.dto.node.FlowNode;
-import io.github.kentasun.stepflow.flow.dto.node.ParallelFlowNode;
+import io.github.kentasun.stepflow.flow.dto.node.SequenceFlowNode;
 import io.github.kentasun.stepflow.sfl.SflSyntaxParser;
 import io.github.kentasun.stepflow.sfl.SflTokenType;
 
 import java.util.List;
 
 /**
- * PARALLEL 关键字解析策略：解析 {@code PARALLEL(child, child, ...)} 并构造 {@link ParallelFlowNode}。
+ * SEQ 关键字解析策略：解析 {@code SEQ(child, child, ...)} 并构造 {@link SequenceFlowNode}。
  * <p>
- * 与 {@link SeqKeywordParser} 结构相同，但最终生成并发执行节点，两者分开以便独立扩展。
+ * 括号内至少包含一个子 flow，不允许空列表与尾随逗号（由 {@code parseFlowList} 统一校验）。
  * 直接 new 对象，不依赖反射。
  * </p>
  */
-public class ParallelKeywordParser implements KeywordParser {
+public class SeqKeywordResolver implements KeywordResolver {
 
     @Override
     public FlowNode parse(SflSyntaxParser parser, int keywordPos) {
@@ -25,6 +25,6 @@ public class ParallelKeywordParser implements KeywordParser {
         List<FlowNode> children = parser.parseFlowList();
         // 消费右括号
         parser.expect(SflTokenType.RPAREN);
-        return new ParallelFlowNode(FlowContentType.PARALLEL, children);
+        return new SequenceFlowNode(FlowContentType.SEQUENCE, children);
     }
 }

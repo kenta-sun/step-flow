@@ -22,7 +22,7 @@ import io.github.kentasun.stepflow.sfl.SflTokenType;
  * </ul>
  * </p>
  */
-public class IfKeywordParser implements KeywordParser {
+public class IfKeywordResolver implements KeywordResolver {
 
     @Override
     public FlowNode parse(SflSyntaxParser parser, int keywordPos) {
