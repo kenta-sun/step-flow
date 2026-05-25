@@ -1,6 +1,7 @@
 package io.github.kentasun.stepflow.sfl;
 
 import io.github.kentasun.stepflow.flow.dto.node.FlowNode;
+import io.github.kentasun.stepflow.sfl.constants.SlfKeyWords;
 import io.github.kentasun.stepflow.sfl.parser.*;
 
 import java.util.ArrayList;
@@ -37,11 +38,11 @@ public class SflSyntaxParser {
 
     static {
         Map<String, KeywordParser> map = new HashMap<>();
-        map.put("SEQ",      new SeqKeywordParser());
-        map.put("PARALLEL", new ParallelKeywordParser());
-        map.put("STEP",     new StepKeywordParser());
-        map.put("SUB_FLOW", new SubFlowKeywordParser());
-        map.put("IF",       new IfKeywordParser());
+        map.put(SlfKeyWords.SEQ,        new SeqKeywordParser());
+        map.put(SlfKeyWords.PARALLEL,   new ParallelKeywordParser());
+        map.put(SlfKeyWords.STEP,       new StepKeywordParser());
+        map.put(SlfKeyWords.SUB_FLOW,   new SubFlowKeywordParser());
+        map.put(SlfKeyWords.IF,         new IfKeywordParser());
         KEYWORD_PARSERS = Collections.unmodifiableMap(map);
     }
 

@@ -5,6 +5,7 @@ import io.github.kentasun.stepflow.flow.dto.node.FlowNode;
 import io.github.kentasun.stepflow.flow.dto.node.StepFlowNode;
 import io.github.kentasun.stepflow.sfl.SflException;
 import io.github.kentasun.stepflow.sfl.SflSyntaxParser;
+import io.github.kentasun.stepflow.sfl.constants.SlfKeyWords;
 import io.github.kentasun.stepflow.sfl.SflToken;
 import io.github.kentasun.stepflow.sfl.SflTokenType;
 
@@ -36,22 +37,27 @@ public class StepKeywordParser implements KeywordParser {
             parser.consume(); // 消费 '.'
             SflToken suffix = parser.expect(SflTokenType.IDENT);
             switch (suffix.getText()) {
-                case "param":
+                case SlfKeyWords.STEP_PARAM:
                     if (paramNameMap != null) {
-                        throw new SflException("STEP 不允许重复声明 .param(...)，位置: " + suffix.getPosition());
+                        throw new SflException(
+                                SlfKeyWords.STEP + " 不允许重复声明 ." + SlfKeyWords.STEP_PARAM
+                                        + "(...)，位置: " + suffix.getPosition());
                     }
-                    paramNameMap = parseMappingList(parser, "param");
+                    paramNameMap = parseMappingList(parser, SlfKeyWords.STEP_PARAM);
                     break;
-                case "result":
+                case SlfKeyWords.STEP_RESULT:
                     if (resultNameMap != null) {
-                        throw new SflException("STEP 不允许重复声明 .result(...)，位置: " + suffix.getPosition());
+                        throw new SflException(
+                                SlfKeyWords.STEP + " 不允许重复声明 ." + SlfKeyWords.STEP_RESULT
+                                        + "(...)，位置: " + suffix.getPosition());
                     }
-                    resultNameMap = parseMappingList(parser, "result");
+                    resultNameMap = parseMappingList(parser, SlfKeyWords.STEP_RESULT);
                     break;
                 default:
                     throw new SflException(
-                            "STEP 后缀未知 [" + suffix.getText() + "]，仅支持 param / result，位置: "
-                                    + suffix.getPosition());
+                            SlfKeyWords.STEP + " 后缀未知 [" + suffix.getText() + "]，仅支持 "
+                                    + SlfKeyWords.STEP_PARAM + " / " + SlfKeyWords.STEP_RESULT
+                                    + "，位置: " + suffix.getPosition());
             }
         }
 
