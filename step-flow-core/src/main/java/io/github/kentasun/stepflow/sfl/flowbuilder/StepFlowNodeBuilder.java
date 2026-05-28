@@ -25,9 +25,9 @@ public class StepFlowNodeBuilder implements FlowNodeBuilder {
 
     @Override
     public FlowNode parse(SflParser parser, int keywordPos) {
-        parser.expect(SflTokenType.LPAREN);
-        SflToken stepCodeToken = parser.expect(SflTokenType.IDENT);
-        parser.expect(SflTokenType.RPAREN);
+        parser.consumeTokenByType(SflTokenType.LPAREN);
+        SflToken stepCodeToken = parser.consumeTokenByType(SflTokenType.IDENT);
+        parser.consumeTokenByType(SflTokenType.RPAREN);
 
         Map<String, String> paramNameMap = null;
         Map<String, String> resultNameMap = null;
@@ -35,7 +35,7 @@ public class StepFlowNodeBuilder implements FlowNodeBuilder {
         // 循环消费可选的 .param(...) / .result(...) 后缀
         while (parser.peek().getType() == SflTokenType.DOT) {
             parser.consume(); // 消费 '.'
-            SflToken suffix = parser.expect(SflTokenType.IDENT);
+            SflToken suffix = parser.consumeTokenByType(SflTokenType.IDENT);
             switch (suffix.getText()) {
                 case SlfKeyWords.STEP_PARAM:
                     if (paramNameMap != null) {
@@ -75,12 +75,12 @@ public class StepFlowNodeBuilder implements FlowNodeBuilder {
      * @return 非空映射，或括号内无任何条目时返回 {@code null}
      */
     private Map<String, String> parseMappingList(SflParser parser, String suffixName) {
-        parser.expect(SflTokenType.LPAREN);
+        parser.consumeTokenByType(SflTokenType.LPAREN);
         Map<String, String> map = new LinkedHashMap<>();
 
         // 空括号 → 直接返回 null
         if (parser.peek().getType() == SflTokenType.RPAREN) {
-            parser.expect(SflTokenType.RPAREN);
+            parser.consumeTokenByType(SflTokenType.RPAREN);
             return null;
         }
 
@@ -94,7 +94,7 @@ public class StepFlowNodeBuilder implements FlowNodeBuilder {
             parseMappingEntry(parser, map, suffixName);
         }
 
-        parser.expect(SflTokenType.RPAREN);
+        parser.consumeTokenByType(SflTokenType.RPAREN);
         return map.isEmpty() ? null : map;
     }
 
@@ -106,9 +106,9 @@ public class StepFlowNodeBuilder implements FlowNodeBuilder {
      * @param suffixName 后缀名，用于重复键错误消息
      */
     private void parseMappingEntry(SflParser parser, Map<String, String> map, String suffixName) {
-        SflToken key = parser.expect(SflTokenType.IDENT);
-        parser.expect(SflTokenType.EQ);
-        SflToken value = parser.expect(SflTokenType.IDENT);
+        SflToken key = parser.consumeTokenByType(SflTokenType.IDENT);
+        parser.consumeTokenByType(SflTokenType.EQ);
+        SflToken value = parser.consumeTokenByType(SflTokenType.IDENT);
         if (map.containsKey(key.getText())) {
             throw new SflException(
                     suffixName + " 映射键重复: " + key.getText() + "，位置: " + key.getPosition());

@@ -63,7 +63,7 @@ public class SflParser {
      * @throws SflException 未知关键字或子规则违反约束时
      */
     public FlowNode keywordToFlow() {
-        SflToken ident = expect(SflTokenType.IDENT);
+        SflToken ident = this.consumeTokenByType(SflTokenType.IDENT);
         String keyword = ident.getText();
 
         FlowNodeBuilder flowNodeBuilder = KEYWORD_PARSERS.get(keyword);
@@ -83,7 +83,7 @@ public class SflParser {
      * @return 实际消费到的记号
      * @throws SflException 类型不匹配时
      */
-    public SflToken expect(SflTokenType type) {
+    public SflToken consumeTokenByType(SflTokenType type) {
         SflToken token = lexer.consume();
         if (token.getType() != type) {
             throw new SflException("期望 " + type + "，实际为 " + token.getType()
@@ -153,7 +153,7 @@ public class SflParser {
         }
         SflParser parser = new SflParser(sflText);
         FlowNode root = parser.keywordToFlow();
-        parser.expect(SflTokenType.EOF);
+        parser.consumeTokenByType(SflTokenType.EOF);
         return root;
     }
 }

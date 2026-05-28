@@ -27,9 +27,9 @@ public class IfFlowNodeBuilder implements FlowNodeBuilder {
     @Override
     public FlowNode parse(SflParser parser, int keywordPos) {
         // 解析条件节点：IF(条件)
-        parser.expect(SflTokenType.LPAREN);
+        parser.consumeTokenByType(SflTokenType.LPAREN);
         FlowNode conditionNode = parser.keywordToFlow();
-        parser.expect(SflTokenType.RPAREN);
+        parser.consumeTokenByType(SflTokenType.RPAREN);
 
         // 条件必须是 STEP 节点
         if (!(conditionNode instanceof StepFlowNode)) {
@@ -46,16 +46,16 @@ public class IfFlowNodeBuilder implements FlowNodeBuilder {
         FlowNode falseFlowNode = null;
         if (parser.peek().getType() == SflTokenType.DOT) {
             parser.consume(); // 消费 '.'
-            SflToken falseToken = parser.expect(SflTokenType.IDENT);
+            SflToken falseToken = parser.consumeTokenByType(SflTokenType.IDENT);
             if (!SlfKeyWords.IF_FALSE.equals(falseToken.getText())) {
                 throw new SflException(
                         "IF 在 ." + SlfKeyWords.IF_TRUE + "(...) 之后仅允许 ."
                                 + SlfKeyWords.IF_FALSE + "(...)，实际为 [." + falseToken.getText()
                                 + "]，位置: " + falseToken.getPosition());
             }
-            parser.expect(SflTokenType.LPAREN);
+            parser.consumeTokenByType(SflTokenType.LPAREN);
             falseFlowNode = parser.keywordToFlow();
-            parser.expect(SflTokenType.RPAREN);
+            parser.consumeTokenByType(SflTokenType.RPAREN);
         }
 
         return new IfElseFlowNode(FlowContentType.IF_ELSE, condition, trueFlowNode, falseFlowNode);
@@ -77,7 +77,7 @@ public class IfFlowNodeBuilder implements FlowNodeBuilder {
                     "IF 缺少 ." + branchName + "(...) 分支，位置: " + parser.peek().getPosition());
         }
         parser.consume(); // 消费 '.'
-        SflToken branchToken = parser.expect(SflTokenType.IDENT);
+        SflToken branchToken = parser.consumeTokenByType(SflTokenType.IDENT);
         if (!branchName.equals(branchToken.getText())) {
             if (SlfKeyWords.IF_TRUE.equals(branchName)) {
                 throw new SflException(
@@ -89,9 +89,9 @@ public class IfFlowNodeBuilder implements FlowNodeBuilder {
                     "IF 期望 ." + branchName + "(...)，实际为 [." + branchToken.getText() + "]，位置: "
                             + branchToken.getPosition());
         }
-        parser.expect(SflTokenType.LPAREN);
+        parser.consumeTokenByType(SflTokenType.LPAREN);
         FlowNode branch = parser.keywordToFlow();
-        parser.expect(SflTokenType.RPAREN);
+        parser.consumeTokenByType(SflTokenType.RPAREN);
         return branch;
     }
 }

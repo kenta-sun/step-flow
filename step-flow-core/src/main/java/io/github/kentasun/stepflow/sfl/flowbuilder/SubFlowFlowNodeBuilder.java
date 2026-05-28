@@ -18,11 +18,11 @@ public class SubFlowFlowNodeBuilder implements FlowNodeBuilder {
     @Override
     public FlowNode parse(SflParser parser, int keywordPos) {
         // 消费左括号
-        parser.expect(SflTokenType.LPAREN);
+        parser.consumeTokenByType(SflTokenType.LPAREN);
         // 解析子流程编码（单一标识符）
-        SflToken flowCodeToken = parser.expect(SflTokenType.IDENT);
+        SflToken flowCodeToken = parser.consumeTokenByType(SflTokenType.IDENT);
         // 消费右括号
-        parser.expect(SflTokenType.RPAREN);
+        parser.consumeTokenByType(SflTokenType.RPAREN);
         return new SubFlowNode(FlowContentType.SUB_FLOW, flowCodeToken.getText());
     }
 }

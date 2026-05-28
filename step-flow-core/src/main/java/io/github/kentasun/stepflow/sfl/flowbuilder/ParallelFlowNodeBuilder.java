@@ -20,11 +20,11 @@ public class ParallelFlowNodeBuilder implements FlowNodeBuilder {
     @Override
     public FlowNode parse(SflParser parser, int keywordPos) {
         // 消费左括号
-        parser.expect(SflTokenType.LPAREN);
+        parser.consumeTokenByType(SflTokenType.LPAREN);
         // 递归解析所有子节点（至少一个）
         List<FlowNode> children = parser.parseFlowList();
         // 消费右括号
-        parser.expect(SflTokenType.RPAREN);
+        parser.consumeTokenByType(SflTokenType.RPAREN);
         return new ParallelFlowNode(FlowContentType.PARALLEL, children);
     }
 }

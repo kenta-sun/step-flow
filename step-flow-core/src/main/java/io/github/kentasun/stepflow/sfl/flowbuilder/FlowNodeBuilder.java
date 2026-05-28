@@ -21,7 +21,7 @@ public interface FlowNodeBuilder {
     /**
      * 解析关键字之后的语法片段，返回对应的流程节点。
      *
-     * @param parser     当前语法分析器（提供 expect / peek / consume / parseFlowList 等共享方法）
+     * @param parser     当前语法分析器（提供 consumeTokenByType / peek / consume / parseFlowList 等共享方法）
      * @param keywordPos 关键字在源文本中的字符偏移，用于错误定位
      * @return 解析结果节点，不为 null
      * @throws SflException 语法或语义规则违反时
