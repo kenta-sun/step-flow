@@ -6,7 +6,7 @@ import io.github.kentasun.stepflow.sfl.constants.SlfKeyWords;
 /**
  * SFL 词法分析器：将编排文本切分为 {@link SflToken} 流。
  * <p>
- * 采用单字符前瞻（{@link #lookahead}）实现 {@link #peek()} / {@link #consume()}，
+ * 采用单字符前瞻（{@link #nextToken}）实现 {@link #peek()} / {@link #consume()}，
  * 语法层只需关心当前记号而无需管理下标。空白符在记号边界处跳过，不参与 Token 产出，
  * 从而允许在关键字与括号间自由换行，降低存储时的格式化约束。
  * </p>
@@ -19,17 +19,17 @@ public class SflLexer {
 
     private final String text;
     private int pos;
-    private SflToken lookahead;
+    private SflToken nextToken;
 
     /**
      * 绑定完整 SFL 源文本并预读第一个记号。
      *
      * @param sflText slf 字符串
      */
-    SflLexer(String sflText) {
+    public SflLexer(String sflText) {
         this.text = sflText;
         this.pos = 0;
-        this.lookahead = nextToken();
+        this.nextToken = nextToken();
     }
 
     /**
@@ -37,8 +37,8 @@ public class SflLexer {
      *
      * @return 下一个待消费的记号
      */
-    SflToken peek() {
-        return lookahead;
+    public SflToken peek() {
+        return nextToken;
     }
 
     /**
@@ -46,9 +46,9 @@ public class SflLexer {
      *
      * @return 本次消费掉的记号
      */
-    SflToken consume() {
-        SflToken current = lookahead;
-        lookahead = nextToken();
+    public SflToken consume() {
+        SflToken current = nextToken;
+        nextToken = nextToken();
         return current;
     }
 
@@ -57,10 +57,10 @@ public class SflLexer {
      *
      * @param type 期望的语法角色
      * @param text 期望的文本字面量
-     * @return {@code true} 表示 {@link #lookahead} 与期望一致
+     * @return {@code true} 表示 {@link #nextToken} 与期望一致
      */
-    public boolean isLookahead(SflTokenType type, String text) {
-        return lookahead.matches(type, text);
+    public boolean nextTokenMatches(SflTokenType type, String text) {
+        return nextToken.matches(type, text);
     }
 
     /**
@@ -69,8 +69,8 @@ public class SflLexer {
      * @param symbolText 符号字面量，见 {@link SlfKeyWords} 中的 {@code *_TEXT} 常量
      * @return {@code true} 表示下一个待消费记号为该符号
      */
-    public boolean isLookaheadSymbol(String symbolText) {
-        return isLookahead(SflTokenType.SYMBOL, symbolText);
+    public boolean nextTokenIsSymbol(String symbolText) {
+        return nextTokenMatches(SflTokenType.SYMBOL, symbolText);
     }
 
     /**
@@ -79,8 +79,8 @@ public class SflLexer {
      * @param keywordText 关键字字面量，见 {@link SlfKeyWords}
      * @return {@code true} 表示下一个待消费记号为该关键字
      */
-    public boolean isLookaheadKeyword(String keywordText) {
-        return isLookahead(SflTokenType.KEYWORD, keywordText);
+    public boolean nextTokenIsKeyword(String keywordText) {
+        return nextTokenMatches(SflTokenType.KEYWORD, keywordText);
     }
 
     /**
@@ -88,8 +88,8 @@ public class SflLexer {
      *
      * @return {@code true} 表示下一个待消费记号为用户自定义内容
      */
-    public boolean isLookaheadLiteral() {
-        return lookahead.getType() == SflTokenType.LITERAL;
+    public boolean nextTokenIsLiteral() {
+        return nextToken.getType() == SflTokenType.LITERAL;
     }
 
     /**
@@ -100,7 +100,7 @@ public class SflLexer {
      * @return 已消费且校验通过的记号
      */
     public SflToken consumeMatched(SflTokenType type, String text) {
-        if (!isLookahead(type, text)) {
+        if (!nextTokenMatches(type, text)) {
             throw unexpectedToken(type, text);
         }
         return consume();
@@ -132,7 +132,7 @@ public class SflLexer {
      * @return 已消费的字面量记号
      */
     public SflToken consumeLiteral() {
-        if (!isLookaheadLiteral()) {
+        if (!nextTokenIsLiteral()) {
             throw unexpectedToken(SflTokenType.LITERAL, null);
         }
         return consume();
@@ -231,11 +231,8 @@ public class SflLexer {
         return Character.isLetterOrDigit(c) || c == '_' || c == '.';
     }
 
-    /**
-     * 构造「期望 type[+text] 与实际 lookahead 不符」的异常消息。
-     */
     private SflException unexpectedToken(SflTokenType expectedType, String expectedText) {
-        SflToken actual = lookahead;
+        SflToken actual = nextToken;
         String expected = expectedText == null
                 ? String.valueOf(expectedType)
                 : expectedType + " [" + expectedText + "]";

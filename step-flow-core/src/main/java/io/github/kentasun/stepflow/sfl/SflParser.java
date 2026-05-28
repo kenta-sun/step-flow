@@ -154,8 +154,8 @@ public class SflParser {
      * @param text 期望的文本字面量
      * @return {@code true} 表示当前前瞻记号与期望一致
      */
-    public boolean isLookahead(SflTokenType type, String text) {
-        return lexer.isLookahead(type, text);
+    public boolean nextTokenMatches(SflTokenType type, String text) {
+        return lexer.nextTokenMatches(type, text);
     }
 
     /**
@@ -164,8 +164,8 @@ public class SflParser {
      * @param symbolText 符号字面量
      * @return {@code true} 表示下一个待消费记号为该符号
      */
-    public boolean isLookaheadSymbol(String symbolText) {
-        return lexer.isLookaheadSymbol(symbolText);
+    public boolean nextTokenIsSymbol(String symbolText) {
+        return lexer.nextTokenIsSymbol(symbolText);
     }
 
     /**
@@ -174,8 +174,8 @@ public class SflParser {
      * @param keywordText 关键字字面量
      * @return {@code true} 表示下一个待消费记号为该关键字
      */
-    public boolean isLookaheadKeyword(String keywordText) {
-        return lexer.isLookaheadKeyword(keywordText);
+    public boolean nextTokenIsKeyword(String keywordText) {
+        return lexer.nextTokenIsKeyword(keywordText);
     }
 
     /**
@@ -188,13 +188,13 @@ public class SflParser {
      */
     public List<FlowNode> parseFlowList() {
         List<FlowNode> list = new ArrayList<>();
-        if (isLookaheadSymbol(SlfKeyWords.RPAREN_TEXT)) {
+        if (nextTokenIsSymbol(SlfKeyWords.RPAREN_TEXT)) {
             throw new SflException("参数列表不能为空，位置: " + lexer.peek().getPosition());
         }
         list.add(keywordToFlow());
-        while (isLookaheadSymbol(SlfKeyWords.COMMA_TEXT)) {
+        while (nextTokenIsSymbol(SlfKeyWords.COMMA_TEXT)) {
             consumeSymbol(SlfKeyWords.COMMA_TEXT);
-            if (isLookaheadSymbol(SlfKeyWords.RPAREN_TEXT)) {
+            if (nextTokenIsSymbol(SlfKeyWords.RPAREN_TEXT)) {
                 throw new SflException("参数列表末尾不允许有多余逗号，位置: " + lexer.peek().getPosition());
             }
             list.add(keywordToFlow());

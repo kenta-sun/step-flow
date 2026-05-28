@@ -44,7 +44,7 @@ public class IfFlowNodeBuilder implements FlowNodeBuilder {
 
         // 解析可选的 .FALSE(...) 分支
         FlowNode falseFlowNode = null;
-        if (parser.isLookaheadSymbol(SlfKeyWords.DOT_TEXT)) {
+        if (parser.nextTokenIsSymbol(SlfKeyWords.DOT_TEXT)) {
             parser.consumeSymbol(SlfKeyWords.DOT_TEXT);
             SflToken falseToken = parser.consumeKeyword();
             if (!falseToken.isKeyword(SlfKeyWords.IF_FALSE)) {
@@ -72,7 +72,7 @@ public class IfFlowNodeBuilder implements FlowNodeBuilder {
      * @return 分支内的 flow 子树
      */
     private FlowNode parseIfBranch(SflParser parser, String branchName) {
-        if (!parser.isLookaheadSymbol(SlfKeyWords.DOT_TEXT)) {
+        if (!parser.nextTokenIsSymbol(SlfKeyWords.DOT_TEXT)) {
             throw new SflException(
                     "IF 缺少 ." + branchName + "(...) 分支，位置: " + parser.peek().getPosition());
         }
