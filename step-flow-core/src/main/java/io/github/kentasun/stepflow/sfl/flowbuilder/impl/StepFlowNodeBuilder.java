@@ -3,11 +3,11 @@ package io.github.kentasun.stepflow.sfl.flowbuilder.impl;
 import io.github.kentasun.stepflow.flow.constants.FlowContentType;
 import io.github.kentasun.stepflow.flow.dto.node.FlowNode;
 import io.github.kentasun.stepflow.flow.dto.node.StepFlowNode;
-import io.github.kentasun.stepflow.sfl.SflException;
+import io.github.kentasun.stepflow.sfl.exception.SflException;
 import io.github.kentasun.stepflow.sfl.SflParser;
 import io.github.kentasun.stepflow.sfl.constants.SflTokenType;
 import io.github.kentasun.stepflow.sfl.constants.SlfKeyWords;
-import io.github.kentasun.stepflow.sfl.SflToken;
+import io.github.kentasun.stepflow.sfl.token.SflToken;
 import io.github.kentasun.stepflow.sfl.flowbuilder.FlowNodeBuilder;
 
 import java.util.LinkedHashMap;

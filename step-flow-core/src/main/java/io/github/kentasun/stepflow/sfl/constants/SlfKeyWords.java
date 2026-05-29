@@ -1,6 +1,6 @@
 package io.github.kentasun.stepflow.sfl.constants;
 
-import io.github.kentasun.stepflow.sfl.SflLexer;
+import io.github.kentasun.stepflow.sfl.token.SflLexer;
 import io.github.kentasun.stepflow.sfl.SflParser;
 import io.github.kentasun.stepflow.sfl.flowbuilder.FlowNodeBuilder;
 

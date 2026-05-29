@@ -1,4 +1,4 @@
-package io.github.kentasun.stepflow.sfl;
+package io.github.kentasun.stepflow.sfl.exception;
 
 /**
  * Step Flow Language（SFL）解析过程中抛出的运行时异常。

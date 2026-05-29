@@ -1,7 +1,8 @@
-package io.github.kentasun.stepflow.sfl;
+package io.github.kentasun.stepflow.sfl.token;
 
 import io.github.kentasun.stepflow.sfl.constants.SflTokenType;
 import io.github.kentasun.stepflow.sfl.constants.SlfKeyWords;
+import io.github.kentasun.stepflow.sfl.exception.SflException;
 
 /**
  * SFL 词法分析器：将编排文本切分为 {@link SflToken} 流。
@@ -30,7 +31,7 @@ public class SflLexer {
         this.pos = 0;
         this.line = 1;
         this.column = 1;
-        this.nextToken = this.nextToken();
+        this.nextToken = this.getNextToken();
     }
 
     /**
@@ -49,7 +50,7 @@ public class SflLexer {
      */
     public SflToken consume() {
         SflToken current = this.nextToken;
-        this.nextToken = this.nextToken();
+        this.nextToken = this.getNextToken();
         return current;
     }
 
@@ -61,7 +62,7 @@ public class SflLexer {
      *
      * @return 新记号，输入耗尽时返回 type={@link SflTokenType#SYMBOL}、text 为空串的 EOF 记号
      */
-    private SflToken nextToken() {
+    private SflToken getNextToken() {
         this.skipWhitespace();
         // 记号起始处的行、列与偏移，供 SflToken 记录及异常定位
         int tokenLine = this.line;

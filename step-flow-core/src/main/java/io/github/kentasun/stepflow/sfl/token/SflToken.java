@@ -1,9 +1,10 @@
-package io.github.kentasun.stepflow.sfl;
+package io.github.kentasun.stepflow.sfl.token;
 
 import io.github.kentasun.stepflow.sfl.constants.SflTokenType;
+import io.github.kentasun.stepflow.sfl.exception.SflException;
 
 /**
- * 词法分析产出的不可变记号。
+ * 词法分析产出的不可变 token。
  * <p>
  * {@link #getType()} 仅表示语法角色（符号 / 关键字 / 用户字面量），
  * 具体符号或关键字字面量由 {@link #getText()} 承载。
@@ -21,15 +22,25 @@ import io.github.kentasun.stepflow.sfl.constants.SflTokenType;
  */
 public class SflToken {
 
-    /** token 类型 */
+    /**
+     * token 类型
+     */
     private final SflTokenType type;
-    /** token 内容 */
+    /**
+     * token 内容
+     */
     private final String text;
-    /** token 位置 */
+    /**
+     * token 位置
+     */
     private final int position;
-    /** 行号，从 1 起计 */
+    /**
+     * 行号，从 1 起计
+     */
     private final int line;
-    /** 列号（该行第几个字符），从 1 起计 */
+    /**
+     * 列号（该行第几个字符），从 1 起计
+     */
     private final int column;
 
     /**
@@ -99,17 +110,26 @@ public class SflToken {
         return this.type == expectedType && this.text.equals(expectedText);
     }
 
-    /** @return {@code true} 表示当前记号为 {@link SflTokenType#SYMBOL} 且 text 等于 {@code symbolText} */
+    /**
+     * 是否是 符号
+     * @return {@code true} 表示当前记号为 {@link SflTokenType#SYMBOL} 且 text 等于 {@code symbolText}
+     */
     public boolean isSymbol(String symbolText) {
         return this.matches(SflTokenType.SYMBOL, symbolText);
     }
 
-    /** @return {@code true} 表示当前记号为 {@link SflTokenType#KEYWORD} 且 text 等于 {@code keywordText} */
+    /**
+     * 是否是 关键字
+     * @return {@code true} 表示当前记号为 {@link SflTokenType#KEYWORD} 且 text 等于 {@code keywordText}
+     */
     public boolean isKeyword(String keywordText) {
         return this.matches(SflTokenType.KEYWORD, keywordText);
     }
 
-    /** @return {@code true} 表示当前记号为 {@link SflTokenType#LITERAL}（不校验具体文本） */
+    /**
+     * 是否是 自定义内容
+     * @return {@code true} 表示当前记号为 {@link SflTokenType#LITERAL}（不校验具体文本）
+     */
     public boolean isLiteral() {
         return this.type == SflTokenType.LITERAL;
     }

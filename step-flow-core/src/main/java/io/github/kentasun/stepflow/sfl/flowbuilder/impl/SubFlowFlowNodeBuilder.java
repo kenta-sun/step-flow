@@ -4,7 +4,7 @@ import io.github.kentasun.stepflow.flow.constants.FlowContentType;
 import io.github.kentasun.stepflow.flow.dto.node.FlowNode;
 import io.github.kentasun.stepflow.flow.dto.node.SubFlowNode;
 import io.github.kentasun.stepflow.sfl.SflParser;
-import io.github.kentasun.stepflow.sfl.SflToken;
+import io.github.kentasun.stepflow.sfl.token.SflToken;
 import io.github.kentasun.stepflow.sfl.constants.SflTokenType;
 import io.github.kentasun.stepflow.sfl.constants.SlfKeyWords;
 import io.github.kentasun.stepflow.sfl.flowbuilder.FlowNodeBuilder;
