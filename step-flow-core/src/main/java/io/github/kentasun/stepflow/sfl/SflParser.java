@@ -109,11 +109,11 @@ public class SflParser {
      * @return 是否已成功消费匹配的记号
      */
     public boolean tryConsumeToken(SflTokenType type, String text) {
-        if (!this.nextTokenMatches(type, text)) {
-            return false;
+        if (this.nextTokenMatches(type, text)) {
+            this.lexer.consume();
+            return true;
         }
-        this.lexer.consume();
-        return true;
+        return false;
     }
 
     /**
@@ -134,10 +134,10 @@ public class SflParser {
      * @return 已消费且校验通过的记号
      */
     public SflToken consumeMatched(SflTokenType type, String text) {
-        if (!this.nextTokenMatches(type, text)) {
-            throw this.unexpectedToken(type, text);
+        if (this.nextTokenMatches(type, text)) {
+            return this.lexer.consume();
         }
-        return this.lexer.consume();
+        throw this.unexpectedToken(type, text);
     }
 
     /**
