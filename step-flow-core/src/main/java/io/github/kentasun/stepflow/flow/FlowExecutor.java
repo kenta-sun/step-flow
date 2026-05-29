@@ -1,6 +1,5 @@
 package io.github.kentasun.stepflow.flow;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.kentasun.stepflow.api.dto.StepFlowContext;
 import io.github.kentasun.stepflow.api.flow.FlowProvider;
 import io.github.kentasun.stepflow.api.flow.dto.InputFlow;
@@ -9,8 +8,8 @@ import io.github.kentasun.stepflow.exception.StepFlowException;
 import io.github.kentasun.stepflow.flow.dto.Flow;
 import io.github.kentasun.stepflow.flow.dto.FlowNodeValidateContext;
 import io.github.kentasun.stepflow.flow.dto.node.FlowNode;
+import io.github.kentasun.stepflow.sfl.SflParser;
 import io.github.kentasun.stepflow.step.StepExecutor;
-import io.github.kentasun.stepflow.utils.StepFlowJsonUtils;
 import io.github.kentasun.stepflow.utils.StepFlowUtils;
 import org.slf4j.Logger;
 
@@ -56,8 +55,8 @@ public class FlowExecutor {
                 // 校验流程信息是否合法
                 FlowNode flowNode = null;
                 try {
-                    flowNode = StepFlowJsonUtils.readValue(inputFlow.getContent(), new TypeReference<FlowNode>() {
-                    });
+                    // 使用 SFL 语法分析器解析 InputFlow.content
+                    flowNode = SflParser.parse(inputFlow.getContent());
                     // 校验 flowNode
                     flowNode.validate(validateContext, inputFlow.getFlowCode());
                 } catch (Throwable e) {

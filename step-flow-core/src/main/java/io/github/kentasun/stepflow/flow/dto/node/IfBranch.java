@@ -1,10 +1,5 @@
 package io.github.kentasun.stepflow.flow.dto.node;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import io.github.kentasun.stepflow.flow.dto.FlowNodeValidateContext;
 import io.github.kentasun.stepflow.utils.StepFlowUtils;
 
@@ -26,7 +21,7 @@ public class IfBranch {
     private final StepFlowNode condition;
 
     /**
-     * 内联表达式类型，对应 {@link io.github.kentasun.stepflow.step.StepExecutor#getStepHandlerMap()} 的 key。
+     * 内联表达式类型
      */
     private final String expressionType;
 
@@ -34,14 +29,12 @@ public class IfBranch {
     private final String expression;
 
     /** 条件为 true 时执行的子流程 */
-    @JsonSetter(nulls = Nulls.FAIL)
     private final FlowNode thenFlowNode;
 
-    @JsonCreator
-    public IfBranch(@JsonProperty("condition") StepFlowNode condition,
-                    @JsonProperty("expressionType") String expressionType,
-                    @JsonProperty("expression") String expression,
-                    @JsonProperty("thenFlowNode") FlowNode thenFlowNode) {
+    public IfBranch(StepFlowNode condition,
+                    String expressionType,
+                    String expression,
+                    FlowNode thenFlowNode) {
         boolean hasStepCondition = condition != null;
         boolean hasExpressionCondition = StepFlowUtils.isNotBlank(expressionType)
                 || StepFlowUtils.isNotBlank(expression);
@@ -95,13 +88,11 @@ public class IfBranch {
     }
 
     /** 是否为 STEP 步骤条件 */
-    @JsonIgnore
     public boolean isStepCondition() {
         return this.condition != null;
     }
 
     /** 是否为内联表达式条件 */
-    @JsonIgnore
     public boolean isExpressionCondition() {
         return this.expressionType != null;
     }

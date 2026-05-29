@@ -1,9 +1,5 @@
 package io.github.kentasun.stepflow.flow.dto.node;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import io.github.kentasun.stepflow.api.dto.StepFlowContext;
 import io.github.kentasun.stepflow.dto.ExecutorsContext;
 import io.github.kentasun.stepflow.flow.dto.FlowNodeValidateContext;
@@ -15,12 +11,9 @@ import java.util.List;
  */
 public class SequenceFlowNode extends FlowNode {
 
-    @JsonSetter(nulls = Nulls.FAIL)
     private final List<FlowNode> flowNodeList;
 
-    @JsonCreator
-    public SequenceFlowNode(@JsonProperty("type") String type,
-                            @JsonProperty("flowNodeList") List<FlowNode> flowNodeList) {
+    public SequenceFlowNode(String type, List<FlowNode> flowNodeList) {
         super(type);
         this.flowNodeList = flowNodeList;
     }

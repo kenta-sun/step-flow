@@ -7,7 +7,6 @@ import io.github.kentasun.stepflow.step.dto.Step;
 import io.github.kentasun.stepflow.api.step.dto.StepData;
 import io.github.kentasun.stepflow.api.step.StepDataProvider;
 import io.github.kentasun.stepflow.api.step.StepHandler;
-import io.github.kentasun.stepflow.utils.StepFlowJsonUtils;
 import io.github.kentasun.stepflow.utils.StepFlowUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,10 +80,10 @@ public class StepExecutor {
                 this.stepMap.put(stepData.getStepCode(), new Step(stepData, stepHandler));
             }
             if (StepFlowUtils.isNotEmpty(duplicateSet)) {
-                throw new StepFlowException("这些stepCode重复了：" + StepFlowJsonUtils.writeValueAsString(duplicateSet));
+                throw new StepFlowException("这些stepCode重复了：" + duplicateSet);
             }
             if (StepFlowUtils.isNotEmpty(illegalList)) {
-                throw new StepFlowException("这些step不合法：" + StepFlowJsonUtils.writeValueAsString(illegalList));
+                throw new StepFlowException("这些step不合法：" + illegalList);
             }
         }
     }

@@ -87,16 +87,17 @@ public class JavaExpressionTest {
                         .flowCode("CALC001")
                         .flowName("calc_Hades")
                         .flowType("CALC")
-                        .content("{\"type\":\"SEQUENCE\",\"flowNodeList\":[{\"type\":\"PARALLEL\",\"flowNodeList\":" +
-                                "[{\"type\":\"STEP\",\"stepCode\":\"COMMON001\",\"paramNameMap\":{\"a\":\"dto.num1\",\"b\":\"dto.num2\"}," +
-                                "\"resultNameMap\":{\"add\":\"calc_add\"}},{\"type\":\"STEP\",\"stepCode\":\"COMMON002\"," +
-                                "\"paramNameMap\":{\"a\":\"dto.num3\",\"b\":\"dto.num4\"},\"resultNameMap\":{\"subtract\":\"calc_subtract\"}}]}," +
-                                "{\"type\":\"IF_ELSE\",\"branches\":[{\"condition\":{\"type\":\"STEP\",\"stepCode\":\"CONDITION001\"}," +
-                                "\"thenFlowNode\":{\"type\":\"STEP\",\"stepCode\":\"COMMON003\",\"paramNameMap\":{\"a\":\"calc_add\",\"b\":\"calc_subtract\"}," +
-                                "\"resultNameMap\":{\"multiply\":\"calc_multiply\"}}}]," +
-                                "\"elseFlowNode\":{\"type\":\"STEP\",\"stepCode\":\"COMMON004\"," +
-                                "\"paramNameMap\":{\"a\":\"calc_add\",\"b\":\"calc_subtract\"},\"resultNameMap\":{\"divide\":\"calc_divide\"}}}," +
-                                "{\"type\":\"STEP\",\"stepCode\":\"JAVA001\"}]}")
+                        .content("SEQ("
+                                + "PARALLEL("
+                                + "STEP(COMMON001).PARAM(a=dto.num1,b=dto.num2).result(add=calc_add),"
+                                + "STEP(COMMON002).PARAM(a=dto.num3,b=dto.num4).result(subtract=calc_subtract)"
+                                + "),"
+                                + "IF(STEP(CONDITION001))"
+                                + "THEN(STEP(COMMON003).PARAM(a=calc_add,b=calc_subtract).result(multiply=calc_multiply))"
+                                + "ELSE(STEP(COMMON004).PARAM(a=calc_add,b=calc_subtract).result(divide=calc_divide))"
+                                + "ENDIF,"
+                                + "STEP(JAVA001)"
+                                + ")")
                         .returnFieldList(Arrays.asList("calc_Hades_res", "add"))
                         .build()
         );

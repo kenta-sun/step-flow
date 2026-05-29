@@ -1,9 +1,5 @@
 package io.github.kentasun.stepflow.flow.dto.node;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import io.github.kentasun.stepflow.api.dto.StepFlowContext;
 import io.github.kentasun.stepflow.dto.ExecutorsContext;
 import io.github.kentasun.stepflow.exception.StepFlowException;
@@ -18,16 +14,12 @@ import java.util.List;
 public class IfElseFlowNode extends FlowNode {
 
     /** 至少包含首段 IF...THEN；后续项对应 ELSIF...THEN */
-    @JsonSetter(nulls = Nulls.FAIL)
     private final List<IfBranch> branches;
 
     /** 对应 SFL {@code ELSE(...)}；省略 ELSE 时为 null */
     private final FlowNode elseFlowNode;
 
-    @JsonCreator
-    public IfElseFlowNode(@JsonProperty("type") String type,
-                          @JsonProperty("branches") List<IfBranch> branches,
-                          @JsonProperty("elseFlowNode") FlowNode elseFlowNode) {
+    public IfElseFlowNode(String type, List<IfBranch> branches, FlowNode elseFlowNode) {
         super(type);
         if (branches == null || branches.isEmpty()) {
             throw new IllegalArgumentException("IF_ELSE 的 branches 不能为空");

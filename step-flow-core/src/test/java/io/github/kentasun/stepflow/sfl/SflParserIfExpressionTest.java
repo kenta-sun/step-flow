@@ -4,7 +4,7 @@ import io.github.kentasun.stepflow.flow.dto.node.FlowNode;
 import io.github.kentasun.stepflow.flow.dto.node.IfBranch;
 import io.github.kentasun.stepflow.flow.dto.node.IfElseFlowNode;
 import io.github.kentasun.stepflow.flow.dto.node.StepFlowNode;
-import io.github.kentasun.stepflow.utils.StepFlowJsonUtils;
+import io.github.kentasun.stepflow.testUtils.JsonUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -53,10 +53,10 @@ class SflParserIfExpressionTest {
     }
 
     @Test
-    void serializedJsonShouldContainExpressionFields() {
+    void parsedIfBranchShouldExposeExpressionFields() {
         String sfl = "IF(JEXL(\"a + b > 0\"))THEN(STEP(S001))ENDIF";
         FlowNode root = SflParser.parse(sfl);
-        String json = StepFlowJsonUtils.writeValueAsString(root);
+        String json = JsonUtils.writeValueAsString(root);
 
         Assertions.assertTrue(json.contains("\"expressionType\":\"JEXL\""));
         Assertions.assertTrue(json.contains("\"expression\":\"a + b > 0\""));

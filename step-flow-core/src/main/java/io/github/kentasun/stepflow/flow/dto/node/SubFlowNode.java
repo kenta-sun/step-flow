@@ -1,9 +1,5 @@
 package io.github.kentasun.stepflow.flow.dto.node;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import io.github.kentasun.stepflow.api.dto.StepFlowContext;
 import io.github.kentasun.stepflow.dto.ExecutorsContext;
 import io.github.kentasun.stepflow.flow.dto.FlowNodeValidateContext;
@@ -13,12 +9,9 @@ import io.github.kentasun.stepflow.flow.dto.FlowNodeValidateContext;
  */
 public class SubFlowNode extends FlowNode {
 
-    @JsonSetter(nulls = Nulls.FAIL)
     private final String flowCode;
 
-    @JsonCreator
-    public SubFlowNode(@JsonProperty("type") String type,
-                       @JsonProperty("flowCode") String flowCode) {
+    public SubFlowNode(String type, String flowCode) {
         super(type);
         this.flowCode = flowCode;
     }

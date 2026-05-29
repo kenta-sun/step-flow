@@ -138,18 +138,14 @@ public class AviatorOracleExpressionTest {
                         .flowCode("CALC_DATE_SUB")
                         .flowName("子流程-日期计算")
                         .flowType("DATE")
-                        .content("{\"type\":\"SEQUENCE\",\"flowNodeList\":["
-                                + "{\"type\":\"PARALLEL\",\"flowNodeList\":["
-                                // DC005: startDate + 1.5
-                                + "{\"type\":\"STEP\",\"stepCode\":\"DC005\",\"paramNameMap\":{\"startDate\":\"dto.startDate\"}},"
-                                // DC006: add_months(startDate, 6)
-                                + "{\"type\":\"STEP\",\"stepCode\":\"DC006\",\"paramNameMap\":{\"startDate\":\"dto.startDate\"}},"
-                                // DC007: last_day(endDate)
-                                + "{\"type\":\"STEP\",\"stepCode\":\"DC007\",\"paramNameMap\":{\"endDate\":\"dto.endDate\"}}"
-                                + "]},"
-                                // DC008: calc_last_day - endDate（依赖 DC007 的结果）
-                                + "{\"type\":\"STEP\",\"stepCode\":\"DC008\",\"paramNameMap\":{\"endDate\":\"dto.endDate\"}}"
-                                + "]}")
+                        .content("SEQ("
+                                + "PARALLEL("
+                                + "STEP(DC005).PARAM(startDate=dto.startDate),"
+                                + "STEP(DC006).PARAM(startDate=dto.startDate),"
+                                + "STEP(DC007).PARAM(endDate=dto.endDate)"
+                                + "),"
+                                + "STEP(DC008).PARAM(endDate=dto.endDate)"
+                                + ")")
                         .build(),
 
                 // ---- 主流程 CALC_DATE_MAIN ----
@@ -158,30 +154,19 @@ public class AviatorOracleExpressionTest {
                         .flowCode("CALC_DATE_MAIN")
                         .flowName("主流程-贷款期限与费用计算")
                         .flowType("DATE")
-                        .content("{\"type\":\"SEQUENCE\",\"flowNodeList\":["
-                                // [PARALLEL] DC001(months_between+trunc) 与 DC002(abs) 并行，互不依赖
-                                + "{\"type\":\"PARALLEL\",\"flowNodeList\":["
-                                + "{\"type\":\"STEP\",\"stepCode\":\"DC001\","
-                                + "\"paramNameMap\":{\"endDate\":\"dto.endDate\",\"startDate\":\"dto.startDate\"}},"
-                                + "{\"type\":\"STEP\",\"stepCode\":\"DC002\","
-                                + "\"paramNameMap\":{\"signedValue\":\"dto.signedValue\"}}"
-                                + "]},"
-                                // [IF_ELSE] calc_months_raw < 18.16121 → THEN 走 DC003，ELSE 走 DC004
-                                // Oracle: trunc(months_between(...), 4) = 18.1612 < 18.16121 → THEN 分支
-                                + "{\"type\":\"IF_ELSE\","
-                                + "\"branches\":[{\"condition\":{\"type\":\"STEP\",\"stepCode\":\"CONDITION001\"},"
-                                + "\"thenFlowNode\":{\"type\":\"STEP\",\"stepCode\":\"DC003\","
-                                + "\"paramNameMap\":{\"principal\":\"dto.principal\",\"rateInput\":\"dto.rateInput\"}}}],"
-                                + "\"elseFlowNode\":{\"type\":\"STEP\",\"stepCode\":\"DC004\","
-                                + "\"paramNameMap\":{\"principal\":\"dto.principal\",\"rateInput\":\"dto.rateInput\"}}},"
-                                // [SUB_FLOW] 调用子流程执行日期相关计算（add_months / last_day / 日期相减）
-                                + "{\"type\":\"SUB_FLOW\",\"flowCode\":\"CALC_DATE_SUB\"},"
-                                // [STEP] decode + nvl + coalesce，extraFactor 为 null 时结果 = 5
-                                + "{\"type\":\"STEP\",\"stepCode\":\"DC009\","
-                                + "\"paramNameMap\":{\"extraFactor\":\"dto.extraFactor\"}},"
-                                // [STEP] round + power，最终结算，round(expr,2) 对应 Oracle NUMBER(12,2)
-                                + "{\"type\":\"STEP\",\"stepCode\":\"DC010\"}"
-                                + "]}")
+                        .content("SEQ("
+                                + "PARALLEL("
+                                + "STEP(DC001).PARAM(endDate=dto.endDate,startDate=dto.startDate),"
+                                + "STEP(DC002).PARAM(signedValue=dto.signedValue)"
+                                + "),"
+                                + "IF(STEP(CONDITION001))"
+                                + "THEN(STEP(DC003).PARAM(principal=dto.principal,rateInput=dto.rateInput))"
+                                + "ELSE(STEP(DC004).PARAM(principal=dto.principal,rateInput=dto.rateInput))"
+                                + "ENDIF,"
+                                + "SUB_FLOW(CALC_DATE_SUB),"
+                                + "STEP(DC009).PARAM(extraFactor=dto.extraFactor),"
+                                + "STEP(DC010)"
+                                + ")")
                         .returnFieldList(Arrays.asList(
                                 "calc_months_raw", "calc_abs_val", "calc_base",
                                 "calc_date_shifted", "calc_add_months", "calc_last_day",

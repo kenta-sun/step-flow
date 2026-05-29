@@ -1,9 +1,7 @@
 package io.github.kentasun.stepflow.sfl;
 
-import io.github.kentasun.stepflow.flow.FlowExecutor;
 import io.github.kentasun.stepflow.flow.dto.node.FlowNode;
 import io.github.kentasun.stepflow.testUtils.JsonUtils;
-import io.github.kentasun.stepflow.utils.StepFlowJsonUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -21,9 +19,9 @@ class SflParserTest {
                     + "\"paramNameMap\":{\"a\":\"dto.num3\",\"b\":\"dto.num4\"},\"resultNameMap\":{\"subtract\":\"calc_subtract\"}}]},"
                     + "{\"type\":\"IF_ELSE\",\"branches\":[{\"condition\":{\"type\":\"STEP\",\"stepCode\":\"CONDITION001\"},"
                     + "\"thenFlowNode\":{\"type\":\"STEP\",\"stepCode\":\"COMMON003\",\"paramNameMap\":{\"a\":\"calc_add\",\"b\":\"calc_subtract\"},"
-                    + "\"resultNameMap\":{\"multiply\":\"calc_multiply\"}}},"
+                    + "\"resultNameMap\":{\"multiply\":\"calc_multiply\"}},\"stepCondition\": true,\"expressionCondition\": false},"
                     + " {\"expressionType\":\"AVIATOR\",\"expression\":\"a > b || c == \\\"hello\\\"\","
-                    + " \"thenFlowNode\":{\"type\":\"STEP\",\"stepCode\":\"COMMON005\"}}],"
+                    + " \"thenFlowNode\":{\"type\":\"STEP\",\"stepCode\":\"COMMON005\"},\"stepCondition\": false,\"expressionCondition\": true}],"
                     + "\"elseFlowNode\":{\"type\":\"STEP\",\"stepCode\":\"COMMON004\","
                     + "\"paramNameMap\":{\"a\":\"calc_add\",\"b\":\"calc_subtract\"},\"resultNameMap\":{\"divide\":\"calc_divide\"}}},"
                     + "{\"type\":\"STEP\",\"stepCode\":\"JAVA001\"}]}";
@@ -44,8 +42,7 @@ class SflParserTest {
                     + ")";
 
     /**
-     * 将 SFL 文本解析为 {@link FlowNode}，经与 {@link FlowExecutor} 相同的
-     * {@link StepFlowJsonUtils} 序列化后，与既有 JSON content 做结构化比对。
+     * 将 SFL 文本解析为 {@link FlowNode}，经序列化后，与既有 JSON content 做结构化比对。
      */
     @Test
     void testSflParser() {

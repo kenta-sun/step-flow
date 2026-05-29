@@ -1,10 +1,6 @@
 package io.github.kentasun.stepflow.flow.dto.node;
 
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import io.github.kentasun.stepflow.api.dto.OneOffParams;
 import io.github.kentasun.stepflow.api.dto.StepFlowContext;
 import io.github.kentasun.stepflow.dto.ExecutorsContext;
@@ -20,7 +16,6 @@ import java.util.Map;
  */
 public class StepFlowNode extends FlowNode {
 
-    @JsonSetter(nulls = Nulls.FAIL)
     private final String stepCode;
     // 调用该步骤需要映射的参数，解决当前 contextMap 中的参数名与步骤需要的参数名对不上的问题。
     private final Map<String, String> paramNameMap;
@@ -30,11 +25,10 @@ public class StepFlowNode extends FlowNode {
      */
     private final Map<String, String> resultNameMap;
 
-    @JsonCreator
-    public StepFlowNode(@JsonProperty("type") String type,
-                        @JsonProperty("stepCode") String stepCode,
-                        @JsonProperty("paramNameMap") Map<String, String> paramNameMap,
-                        @JsonProperty("resultNameMap") Map<String, String> resultNameMap) {
+    public StepFlowNode(String type,
+                        String stepCode,
+                        Map<String, String> paramNameMap,
+                        Map<String, String> resultNameMap) {
         super(type);
         this.stepCode = stepCode;
         this.paramNameMap = paramNameMap;
