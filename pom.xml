@@ -12,13 +12,34 @@
     <!-- 父项目元信息：便于仓库与文档识别 -->
     <name>step-flow-parent</name>
     <description>Parent pom for step-flow framework.</description>
+    <url>https://github.com/kenta-sun/step-flow</url>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>kenta-sun</name>
+            <email>45735033+kenta-sun@users.noreply.github.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/kenta-sun/step-flow.git</connection>
+        <developerConnection>scm:git:ssh://github.com/kenta-sun/step-flow.git</developerConnection>
+        <url>https://github.com/kenta-sun/step-flow/tree/main</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <!-- 统一属性：集中管理 Java 与依赖版本 -->
     <properties>
         <revision>1.0.0</revision>
         <java.version>8</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!-- Spring Boot 依赖版本：统一管理 -->
@@ -37,10 +58,10 @@
     <modules>
         <module>step-flow-api</module>
         <module>step-flow-core</module>
+        <module>step-flow-spring-boot-starter</module>
         <module>step-flow-handler-aviator</module>
         <module>step-flow-handler-aviator-oracle</module>
         <module>step-flow-handler-jexl</module>
-        <module>step-flow-spring-boot-starter</module>
     </modules>
 
     <!-- 统一依赖版本管理：子模块可省略版本号 -->
@@ -54,6 +75,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <!-- step-flow API 模块版本：契约与 SPI，供 core / handler 引用 -->
             <dependency>
                 <groupId>io.github.kenta-sun</groupId>
@@ -64,6 +86,12 @@
             <dependency>
                 <groupId>io.github.kenta-sun</groupId>
                 <artifactId>step-flow-core</artifactId>
+                <version>${step-flow.version}</version>
+            </dependency>
+            <!-- step-flow 核心模块 spring-boot-starter 版本 -->
+            <dependency>
+                <groupId>io.github.kenta-sun</groupId>
+                <artifactId>step-flow-spring-boot-starter</artifactId>
                 <version>${step-flow.version}</version>
             </dependency>
             <!-- Aviator 引擎插件包 -->
@@ -84,6 +112,19 @@
                 <artifactId>step-flow-handler-jexl</artifactId>
                 <version>${step-flow.version}</version>
             </dependency>
+            <!-- 日志框架 -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j-api.version}</version>
+            </dependency>
+
+            <!-- 单元测试 -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>5.8.2</version>
+            </dependency>
             <!-- Jackson -->
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -95,18 +136,6 @@
                 <groupId>com.fasterxml.jackson.datatype</groupId>
                 <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${jackson.version}</version>
-            </dependency>
-            <!-- 日志框架 -->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j-api.version}</version>
-            </dependency>
-            <!-- 单元测试 -->
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter</artifactId>
-                <version>5.8.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
