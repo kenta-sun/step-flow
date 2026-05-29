@@ -67,15 +67,6 @@
     <!-- 统一依赖版本管理：子模块可省略版本号 -->
     <dependencyManagement>
         <dependencies>
-            <!-- Spring Boot 依赖平台：统一第三方依赖版本 -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
             <!-- step-flow API 模块版本：契约与 SPI，供 core / handler 引用 -->
             <dependency>
                 <groupId>io.github.kenta-sun</groupId>
@@ -118,7 +109,32 @@
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j-api.version}</version>
             </dependency>
+            <!-- 补充 Spring @Nullable 注解的依赖 -->
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>3.0.2</version>
+            </dependency>
+            <!-- Spring Boot 自动装配 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-autoconfigure</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
+            <!-- 生成 IDE 提示文件 -->
+            <!-- application.yml 里会弹出属性补全和文档描述 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-configuration-processor</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
 
+            <!-- 测试 start -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-test</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
             <!-- 单元测试 -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
