@@ -5,6 +5,7 @@ import io.github.kentasun.stepflow.flow.dto.node.FlowNode;
 import io.github.kentasun.stepflow.flow.dto.node.StepFlowNode;
 import io.github.kentasun.stepflow.sfl.SflException;
 import io.github.kentasun.stepflow.sfl.SflParser;
+import io.github.kentasun.stepflow.sfl.constants.SflTokenType;
 import io.github.kentasun.stepflow.sfl.constants.SlfKeyWords;
 import io.github.kentasun.stepflow.sfl.SflToken;
 import io.github.kentasun.stepflow.sfl.flowbuilder.FlowNodeBuilder;
@@ -25,16 +26,16 @@ public class StepFlowNodeBuilder implements FlowNodeBuilder {
 
     @Override
     public FlowNode parse(SflParser parser, int keywordPos) {
-        parser.consumeSymbol(SlfKeyWords.LPAREN_TEXT);
-        SflToken stepCodeToken = parser.consumeLiteral();
-        parser.consumeSymbol(SlfKeyWords.RPAREN_TEXT);
+        parser.consumeMatched(SflTokenType.SYMBOL, SlfKeyWords.LPAREN);
+        SflToken stepCodeToken = parser.consumeMatched(SflTokenType.LITERAL);
+        parser.consumeMatched(SflTokenType.SYMBOL, SlfKeyWords.RPAREN);
 
         Map<String, String> paramNameMap = null;
         Map<String, String> resultNameMap = null;
 
         // 循环消费可选的 .PARAM(...) / .result(...) 后缀
-        while (parser.tryConsumeSymbol(SlfKeyWords.DOT_TEXT)) {
-            SflToken suffix = parser.consumeKeyword();
+        while (parser.tryConsumeToken(SflTokenType.SYMBOL, SlfKeyWords.DOT)) {
+            SflToken suffix = parser.consumeMatched(SflTokenType.KEYWORD);
             if (suffix.isKeyword(SlfKeyWords.PARAM)) {
                 if (paramNameMap != null) {
                     throw new SflException(
@@ -71,24 +72,24 @@ public class StepFlowNodeBuilder implements FlowNodeBuilder {
      * @return 非空映射，或括号内无任何条目时返回 {@code null}
      */
     private Map<String, String> parseMappingList(SflParser parser, String suffixName) {
-        parser.consumeSymbol(SlfKeyWords.LPAREN_TEXT);
+        parser.consumeMatched(SflTokenType.SYMBOL, SlfKeyWords.LPAREN);
         Map<String, String> map = new LinkedHashMap<>();
 
         // 空括号 → 直接返回 null
-        if (parser.tryConsumeSymbol(SlfKeyWords.RPAREN_TEXT)) {
+        if (parser.tryConsumeToken(SflTokenType.SYMBOL, SlfKeyWords.RPAREN)) {
             return null;
         }
 
         parseMappingEntry(parser, map, suffixName);
-        while (parser.tryConsumeSymbol(SlfKeyWords.COMMA_TEXT)) {
-            if (parser.nextTokenIsSymbol(SlfKeyWords.RPAREN_TEXT)) {
+        while (parser.tryConsumeToken(SflTokenType.SYMBOL, SlfKeyWords.COMMA)) {
+            if (parser.nextTokenMatches(SflTokenType.SYMBOL, SlfKeyWords.RPAREN)) {
                 throw new SflException(
                         suffixName + " 映射列表末尾不允许有多余逗号，位置: " + parser.peek().getPosition());
             }
             parseMappingEntry(parser, map, suffixName);
         }
 
-        parser.consumeSymbol(SlfKeyWords.RPAREN_TEXT);
+        parser.consumeMatched(SflTokenType.SYMBOL, SlfKeyWords.RPAREN);
         return map.isEmpty() ? null : map;
     }
 
@@ -100,9 +101,9 @@ public class StepFlowNodeBuilder implements FlowNodeBuilder {
      * @param suffixName 后缀名，用于重复键错误消息
      */
     private void parseMappingEntry(SflParser parser, Map<String, String> map, String suffixName) {
-        SflToken key = parser.consumeLiteral();
-        parser.consumeSymbol(SlfKeyWords.EQ_TEXT);
-        SflToken value = parser.consumeLiteral();
+        SflToken key = parser.consumeMatched(SflTokenType.LITERAL);
+        parser.consumeMatched(SflTokenType.SYMBOL, SlfKeyWords.EQ);
+        SflToken value = parser.consumeMatched(SflTokenType.LITERAL);
         if (map.containsKey(key.getText())) {
             throw new SflException(
                     suffixName + " 映射键重复: " + key.getText() + "，位置: " + key.getPosition());

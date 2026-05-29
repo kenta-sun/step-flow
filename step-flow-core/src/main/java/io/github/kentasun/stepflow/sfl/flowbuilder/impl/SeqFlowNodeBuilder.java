@@ -4,6 +4,7 @@ import io.github.kentasun.stepflow.flow.constants.FlowContentType;
 import io.github.kentasun.stepflow.flow.dto.node.FlowNode;
 import io.github.kentasun.stepflow.flow.dto.node.SequenceFlowNode;
 import io.github.kentasun.stepflow.sfl.SflParser;
+import io.github.kentasun.stepflow.sfl.constants.SflTokenType;
 import io.github.kentasun.stepflow.sfl.constants.SlfKeyWords;
 import io.github.kentasun.stepflow.sfl.flowbuilder.FlowNodeBuilder;
 
@@ -20,9 +21,9 @@ public class SeqFlowNodeBuilder implements FlowNodeBuilder {
 
     @Override
     public FlowNode parse(SflParser parser, int keywordPos) {
-        parser.consumeSymbol(SlfKeyWords.LPAREN_TEXT);
+        parser.consumeMatched(SflTokenType.SYMBOL, SlfKeyWords.LPAREN);
         List<FlowNode> children = parser.parseFlowList();
-        parser.consumeSymbol(SlfKeyWords.RPAREN_TEXT);
+        parser.consumeMatched(SflTokenType.SYMBOL, SlfKeyWords.RPAREN);
         return new SequenceFlowNode(FlowContentType.SEQUENCE, children);
     }
 }

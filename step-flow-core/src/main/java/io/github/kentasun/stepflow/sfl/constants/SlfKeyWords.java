@@ -25,29 +25,29 @@ public final class SlfKeyWords {
     // 符号（char 供词法器单字符扫描，String 供 type+text 匹配）
     // -------------------------------------------------------------------------
 
-    public static final char LPAREN = '(';
-    public static final String LPAREN_TEXT = String.valueOf(LPAREN);
+    public static final char CHAR_LPAREN = '(';
+    public static final String LPAREN = String.valueOf(CHAR_LPAREN);
 
-    public static final char RPAREN = ')';
-    public static final String RPAREN_TEXT = String.valueOf(RPAREN);
+    public static final char CHAR_RPAREN = ')';
+    public static final String RPAREN = String.valueOf(CHAR_RPAREN);
 
-    public static final char COMMA = ',';
-    public static final String COMMA_TEXT = String.valueOf(COMMA);
+    public static final char CHAR_COMMA = ',';
+    public static final String COMMA = String.valueOf(CHAR_COMMA);
 
-    public static final char DOT = '.';
-    public static final String DOT_TEXT = String.valueOf(DOT);
+    public static final char CHAR_DOT = '.';
+    public static final String DOT = String.valueOf(CHAR_DOT);
 
-    public static final char EQ = '=';
-    public static final String EQ_TEXT = String.valueOf(EQ);
+    public static final char CHAR_EQ = '=';
+    public static final String EQ = String.valueOf(CHAR_EQ);
 
     /** 输入结束标记的文本 */
     public static final String EOF_TEXT = "";
 
     /** 双引号字符，用于词法器扫描内联表达式字符串 */
-    public static final char DOUBLE_QUOTE = '"';
+    public static final char CHAR_DOUBLE_QUOTE = '"';
 
-    /** 转义符，双引号字符串内仅用于转义 {@link #DOUBLE_QUOTE} */
-    public static final char BACKSLASH = '\\';
+    /** 转义符，双引号字符串内仅用于转义 {@link #CHAR_DOUBLE_QUOTE} */
+    public static final char CHAR_BACKSLASH = '\\';
 
     // -------------------------------------------------------------------------
     // 顶层编排关键字（flow 产生式入口）

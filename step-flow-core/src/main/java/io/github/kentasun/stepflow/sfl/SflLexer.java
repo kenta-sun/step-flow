@@ -5,21 +5,14 @@ import io.github.kentasun.stepflow.sfl.constants.SlfKeyWords;
 
 /**
  * SFL 词法分析器：将编排文本切分为 {@link SflToken} 流。
- * <p>
- * 采用单字符前瞻（{@link #nextToken}）实现 {@link #peek()} / {@link #consume()}，
- * 语法层只需关心当前记号而无需管理下标。空白符在记号边界处跳过，不参与 Token 产出，
- * 从而允许在关键字与括号间自由换行，降低存储时的格式化约束。
- * </p>
- * <p>
- * 产出记号的 {@link SflTokenType} 仅区分符号、关键字与用户字面量三类；
- * 具体符号或关键字由 {@link SflToken#getText()} 承载，匹配时须 type 与 text 同时正确。
- * </p>
+ * <p>空白符在记号边界处跳过，不参与 Token 产出，从而允许在关键字与括号间自由换行，降低存储时的格式化约束。</p>
  */
 public class SflLexer {
 
     private final String text;
     private int pos;
     private SflToken nextToken;
+    // TODO 记录 行数、列数，用于打印报错日志
 
     /**
      * 绑定完整 SFL 源文本并预读第一个记号。
@@ -53,206 +46,6 @@ public class SflLexer {
     }
 
     /**
-     * 判断前瞻记号是否同时满足指定的 type 与 text。
-     *
-     * @param type 期望的语法角色
-     * @param text 期望的文本字面量
-     * @return {@code true} 表示 {@link #nextToken} 与期望一致
-     */
-    public boolean nextTokenMatches(SflTokenType type, String text) {
-        return nextToken.matches(type, text);
-    }
-
-    /**
-     * 判断前瞻记号是否为指定符号（{@link SflTokenType#SYMBOL} + 符号文本）。
-     *
-     * @param symbolText 符号字面量，见 {@link SlfKeyWords} 中的 {@code *_TEXT} 常量
-     * @return {@code true} 表示下一个待消费记号为该符号
-     */
-    public boolean nextTokenIsSymbol(String symbolText) {
-        return nextTokenMatches(SflTokenType.SYMBOL, symbolText);
-    }
-
-    /**
-     * 判断前瞻记号是否为指定关键字（{@link SflTokenType#KEYWORD} + 关键字文本）。
-     *
-     * @param keywordText 关键字字面量，见 {@link SlfKeyWords}
-     * @return {@code true} 表示下一个待消费记号为该关键字
-     */
-    public boolean nextTokenIsKeyword(String keywordText) {
-        return nextTokenMatches(SflTokenType.KEYWORD, keywordText);
-    }
-
-    /**
-     * 判断前瞻记号是否为用户字面量（{@link SflTokenType#LITERAL}）。
-     *
-     * @return {@code true} 表示下一个待消费记号为用户自定义内容
-     */
-    public boolean nextTokenIsLiteral() {
-        return nextToken.getType() == SflTokenType.LITERAL;
-    }
-
-    /**
-     * 判断前瞻记号是否为双引号字符串（{@link SflTokenType#QUOTED_STRING}）。
-     *
-     * @return {@code true} 表示下一个待消费记号为双引号字符串
-     */
-    public boolean nextTokenIsQuotedString() {
-        return nextToken.getType() == SflTokenType.QUOTED_STRING;
-    }
-
-    /**
-     * 若前瞻记号同时匹配 type 与 text 则消费并返回 {@code true}，否则不前进游标返回 {@code false}。
-     * <p>
-     * 供语法层实现 {@code while (tryConsume...)} 或 {@code if (tryConsume...)} 等可选/重复片段，
-     * 避免手写「先 {@link #nextTokenMatches} 再 {@link #consume()}」的两步调用。
-     * </p>
-     *
-     * @param type 期望的语法角色
-     * @param text 期望的文本字面量
-     * @return {@code true} 表示已消费匹配的记号；{@code false} 表示前瞻不匹配且游标未动
-     */
-    public boolean tryConsumeMatched(SflTokenType type, String text) {
-        if (!nextTokenMatches(type, text)) {
-            return false;
-        }
-        this.consume();
-        return true;
-    }
-
-    /**
-     * 若前瞻记号为指定符号则消费并返回 {@code true}，否则不前进游标返回 {@code false}。
-     *
-     * @param symbolText 符号字面量
-     * @return 是否已成功消费该符号
-     */
-    public boolean tryConsumeSymbol(String symbolText) {
-        return tryConsumeMatched(SflTokenType.SYMBOL, symbolText);
-    }
-
-    /**
-     * 若前瞻记号为指定关键字则消费并返回 {@code true}，否则不前进游标返回 {@code false}。
-     *
-     * @param keywordText 关键字字面量
-     * @return 是否已成功消费该关键字
-     */
-    public boolean tryConsumeKeyword(String keywordText) {
-        return tryConsumeMatched(SflTokenType.KEYWORD, keywordText);
-    }
-
-    /**
-     * 消费当前记号，且必须同时匹配 type 与 text，否则抛出 {@link SflException}。
-     *
-     * @param type 期望的语法角色
-     * @param text 期望的文本字面量
-     * @return 已消费且校验通过的记号
-     */
-    public SflToken consumeMatched(SflTokenType type, String text) {
-        if (!nextTokenMatches(type, text)) {
-            throw unexpectedToken(type, text);
-        }
-        return consume();
-    }
-
-    /**
-     * 消费当前记号，且必须同时匹配 type 与 text；不匹配时使用调用方提供的语义化错误消息。
-     * <p>
-     * 用于 IF 条件、映射列表等场景：通用「期望 X 实际为 Y」不足以表达业务约束时，
-     * 由 {@link io.github.kentasun.stepflow.sfl.flowbuilder.FlowNodeBuilder} 传入上下文相关文案。
-     * </p>
-     *
-     * @param type         期望的语法角色
-     * @param text         期望的文本字面量；仅 type 约束时可传 {@code null}
-     * @param errorMessage 不匹配时抛出的 {@link SflException} 消息
-     * @return 已消费且校验通过的记号
-     */
-    public SflToken consumeMatched(SflTokenType type, String text, String errorMessage) {
-        if (!nextTokenMatches(type, text)) {
-            throw new SflException(errorMessage);
-        }
-        return consume();
-    }
-
-    /**
-     * 消费指定符号记号。
-     *
-     * @param symbolText 符号字面量
-     * @return 已消费的符号记号
-     */
-    public SflToken consumeSymbol(String symbolText) {
-        return consumeMatched(SflTokenType.SYMBOL, symbolText);
-    }
-
-    /**
-     * 消费指定符号记号；不匹配时使用调用方提供的语义化错误消息。
-     *
-     * @param symbolText   符号字面量
-     * @param errorMessage 不匹配时抛出的 {@link SflException} 消息
-     * @return 已消费的符号记号
-     */
-    public SflToken consumeSymbol(String symbolText, String errorMessage) {
-        return consumeMatched(SflTokenType.SYMBOL, symbolText, errorMessage);
-    }
-
-    /**
-     * 消费指定关键字记号。
-     *
-     * @param keywordText 关键字字面量
-     * @return 已消费的关键字记号
-     */
-    public SflToken consumeKeyword(String keywordText) {
-        return consumeMatched(SflTokenType.KEYWORD, keywordText);
-    }
-
-    /**
-     * 消费指定关键字记号；不匹配时使用调用方提供的语义化错误消息。
-     *
-     * @param keywordText  关键字字面量
-     * @param errorMessage 不匹配时抛出的 {@link SflException} 消息
-     * @return 已消费的关键字记号
-     */
-    public SflToken consumeKeyword(String keywordText, String errorMessage) {
-        return consumeMatched(SflTokenType.KEYWORD, keywordText, errorMessage);
-    }
-
-    /**
-     * 消费用户字面量记号（stepCode、表达式路径等）。
-     *
-     * @return 已消费的字面量记号
-     */
-    public SflToken consumeLiteral() {
-        if (!nextTokenIsLiteral()) {
-            throw unexpectedToken(SflTokenType.LITERAL, null);
-        }
-        return consume();
-    }
-
-    /**
-     * 消费双引号字符串记号（内联表达式正文）。
-     *
-     * @return 已消费的字符串记号，{@link SflToken#getText()} 为转义还原后的内容
-     */
-    public SflToken consumeQuotedString() {
-        if (!nextTokenIsQuotedString()) {
-            throw unexpectedToken(SflTokenType.QUOTED_STRING, null);
-        }
-        return consume();
-    }
-
-    /**
-     * 消费双引号字符串记号；不匹配时使用调用方提供的语义化错误消息。
-     *
-     * @param errorMessage 不匹配时抛出的 {@link SflException} 消息
-     * @return 已消费的字符串记号
-     */
-    public SflToken consumeQuotedString(String errorMessage) {
-        if (!nextTokenIsQuotedString()) {
-            throw new SflException(errorMessage);
-        }
-        return consume();
-    }
-
-    /**
      * 从当前 {@link #pos} 扫描并生成下一个记号。
      * <p>
      * 遇非法字符立即失败，避免将脏数据传入语法层产生误导性「期望 RPAREN」类消息。
@@ -268,22 +61,22 @@ public class SflLexer {
         char c = text.charAt(pos);
         int start = pos;
         switch (c) {
-            case SlfKeyWords.LPAREN:
+            case SlfKeyWords.CHAR_LPAREN:
                 pos++;
-                return symbolToken(SlfKeyWords.LPAREN_TEXT, start);
-            case SlfKeyWords.RPAREN:
+                return symbolToken(SlfKeyWords.LPAREN, start);
+            case SlfKeyWords.CHAR_RPAREN:
                 pos++;
-                return symbolToken(SlfKeyWords.RPAREN_TEXT, start);
-            case SlfKeyWords.COMMA:
+                return symbolToken(SlfKeyWords.RPAREN, start);
+            case SlfKeyWords.CHAR_COMMA:
                 pos++;
-                return symbolToken(SlfKeyWords.COMMA_TEXT, start);
-            case SlfKeyWords.DOT:
+                return symbolToken(SlfKeyWords.COMMA, start);
+            case SlfKeyWords.CHAR_DOT:
                 pos++;
-                return symbolToken(SlfKeyWords.DOT_TEXT, start);
-            case SlfKeyWords.EQ:
+                return symbolToken(SlfKeyWords.DOT, start);
+            case SlfKeyWords.CHAR_EQ:
                 pos++;
-                return symbolToken(SlfKeyWords.EQ_TEXT, start);
-            case SlfKeyWords.DOUBLE_QUOTE:
+                return symbolToken(SlfKeyWords.EQ, start);
+            case SlfKeyWords.CHAR_DOUBLE_QUOTE:
                 return readQuotedString(start);
             default:
                 if (isIdentStart(c)) {
@@ -339,24 +132,24 @@ public class SflLexer {
         StringBuilder sb = new StringBuilder();
         while (pos < text.length()) {
             char c = text.charAt(pos);
-            if (c == SlfKeyWords.BACKSLASH) {
+            if (c == SlfKeyWords.CHAR_BACKSLASH) {
                 pos++;
                 if (pos >= text.length()) {
                     throw new SflException(String.format("字符串转义不完整，位置: %s", pos - 1));
                 }
                 char escaped = text.charAt(pos);
-                if (escaped != SlfKeyWords.DOUBLE_QUOTE) {
+                if (escaped != SlfKeyWords.CHAR_DOUBLE_QUOTE) {
                     throw new SflException(String.format(
                             "字符串内仅支持转义双引号（\\\"），实际为 '\\%s'，位置: %s",
                             escaped,
                             pos - 1
                     ));
                 }
-                sb.append(SlfKeyWords.DOUBLE_QUOTE);
+                sb.append(SlfKeyWords.CHAR_DOUBLE_QUOTE);
                 pos++;
                 continue;
             }
-            if (c == SlfKeyWords.DOUBLE_QUOTE) {
+            if (c == SlfKeyWords.CHAR_DOUBLE_QUOTE) {
                 pos++; // 跳过结束 "
                 return new SflToken(SflTokenType.QUOTED_STRING, sb.toString(), start);
             }
@@ -386,18 +179,5 @@ public class SflLexer {
 
     private static boolean isIdentPart(char c) {
         return Character.isLetterOrDigit(c) || c == '_' || c == '.';
-    }
-
-    private SflException unexpectedToken(SflTokenType expectedType, String expectedText) {
-        SflToken actual = nextToken;
-        String expected = expectedText == null
-                ? String.valueOf(expectedType)
-                : expectedType + " [" + expectedText + "]";
-        return new SflException(String.format(
-                "期望 %s，实际为 %s，位置: %s",
-                expected,
-                actual.getType() + (actual.getText().isEmpty() ? "" : " [" + actual.getText() + "]"),
-                actual.getPosition()
-        ));
     }
 }

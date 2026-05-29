@@ -23,7 +23,7 @@ import java.util.Map;
  * 直接 new 对象，不再通过反射调用 protected 构造器。
  * </p>
  * <p>
-     * 解析期校验（空列表、尾随逗号、重复映射键、IF 条件格式等）在构建树之前失败，
+ * 解析期校验（空列表、尾随逗号、重复映射键、IF 条件格式等）在构建树之前失败，
  * 防止非法结构进入 {@link io.github.kentasun.stepflow.flow.FlowExecutor}。
  * </p>
  */
@@ -48,15 +48,115 @@ public class SflParser {
         FLOW_NODE_BUILDERS = Collections.unmodifiableMap(map);
     }
 
-    /** 词法解析器 */
+    /**
+     * 词法解析器，仅提供 peek / consume
+     */
     private final SflLexer lexer;
 
     /**
+     * 构造方法只允许 {@link #parse} 方法调用
+     *
      * @param sflText slf 字符串
      */
-    public SflParser(String sflText) {
+    private SflParser(String sflText) {
         this.lexer = new SflLexer(sflText);
     }
+
+    /* ---------- 工具方法 ---------- */
+
+    /**
+     * 返回当前前瞻 token，不消费。供各 {@link FlowNodeBuilder} 实现判断后续记号。
+     *
+     * @return 当前前瞻记号
+     */
+    public SflToken peek() {
+        return lexer.peek();
+    }
+
+    /**
+     * 判断 {@code nextToken} 是否满足指定的 {@link SflTokenType}
+     *
+     * @param type 期望的语法角色
+     * @return {@code true} 表示当前前瞻记号与期望一致
+     */
+    public boolean nextTokenMatches(SflTokenType type) {
+        return nextTokenMatches(type, null);
+    }
+
+    /**
+     * 判断前瞻记号是否满足指定的 type；若 {@code text} 非 null，则同时校验文本。
+     *
+     * @param type 期望的语法角色
+     * @param text 期望的文本字面量；为 {@code null} 时仅校验 type
+     * @return {@code true} 表示当前前瞻记号与期望一致
+     */
+    public boolean nextTokenMatches(SflTokenType type, String text) {
+        SflToken token = lexer.peek();
+        if (token.getType() != type) {
+            return false;
+        }
+        return text == null || token.getText().equals(text);
+    }
+
+    /**
+     * 若前瞻记号匹配 type（及可选 text）则消费并返回 {@code true}，否则不前进游标返回 {@code false}。
+     * <p>
+     * 供语法层实现 {@code while (tryConsumeToken...)} 或 {@code if (tryConsumeToken...)} 等可选/重复片段。
+     * </p>
+     *
+     * @param type 期望的语法角色
+     * @param text 期望的文本字面量；为 {@code null} 时仅校验 type
+     * @return 是否已成功消费匹配的记号
+     */
+    public boolean tryConsumeToken(SflTokenType type, String text) {
+        if (!nextTokenMatches(type, text)) {
+            return false;
+        }
+        lexer.consume();
+        return true;
+    }
+
+    /**
+     * 消费当前 token，且必须匹配 {@link SflTokenType}，否则抛出 {@link SflException}。
+     *
+     * @param type 期望的语法角色
+     * @return 已消费且校验通过的记号
+     */
+    public SflToken consumeMatched(SflTokenType type) {
+        return consumeMatched(type, null);
+    }
+
+    /**
+     * 消费当前记号，且必须匹配 type（及可选 text），否则抛出 {@link SflException}。
+     *
+     * @param type 期望的语法角色
+     * @param text 期望的文本字面量；为 {@code null} 时仅校验 type
+     * @return 已消费且校验通过的记号
+     */
+    public SflToken consumeMatched(SflTokenType type, String text) {
+        if (!nextTokenMatches(type, text)) {
+            throw unexpectedToken(type, text);
+        }
+        return lexer.consume();
+    }
+
+    /**
+     * 构造「期望记号与实际不符」的通用错误，供 {@link #consumeMatched(SflTokenType, String)} 使用。
+     */
+    private SflException unexpectedToken(SflTokenType expectedType, String expectedText) {
+        SflToken actual = lexer.peek();
+        String expected = expectedText == null
+                ? String.valueOf(expectedType)
+                : expectedType + " [" + expectedText + "]";
+        return new SflException(String.format(
+                "期望 %s，实际为 %s，位置: %s",
+                expected,
+                actual.getType() + (actual.getText().isEmpty() ? "" : " [" + actual.getText() + "]"),
+                actual.getPosition()
+        ));
+    }
+
+    /* ---------- parse 方法 ---------- */
 
     /**
      * 将一个顶层 flow 关键字解析成对应的 {@link FlowNode}。
@@ -65,7 +165,7 @@ public class SflParser {
      * @throws SflException 未知关键字或子规则违反约束时
      */
     public FlowNode keywordToFlow() {
-        SflToken keywordToken = consumeKeyword();
+        SflToken keywordToken = consumeMatched(SflTokenType.KEYWORD);
         String keyword = keywordToken.getText();
 
         FlowNodeBuilder flowNodeBuilder = FLOW_NODE_BUILDERS.get(keyword);
@@ -80,207 +180,6 @@ public class SflParser {
     }
 
     /**
-     * 若前瞻记号同时匹配 type 与 text 则消费并返回 {@code true}，否则不前进游标返回 {@code false}。
-     *
-     * @param type 期望的语法角色
-     * @param text 期望的文本字面量
-     * @return 是否已成功消费匹配的记号
-     */
-    public boolean tryConsumeToken(SflTokenType type, String text) {
-        return lexer.tryConsumeMatched(type, text);
-    }
-
-    /**
-     * 若前瞻记号为指定符号则消费并返回 {@code true}，否则不前进游标返回 {@code false}。
-     *
-     * @param symbolText 符号字面量
-     * @return 是否已成功消费该符号
-     */
-    public boolean tryConsumeSymbol(String symbolText) {
-        return lexer.tryConsumeSymbol(symbolText);
-    }
-
-    /**
-     * 若前瞻记号为指定关键字则消费并返回 {@code true}，否则不前进游标返回 {@code false}。
-     *
-     * @param keywordText 关键字字面量
-     * @return 是否已成功消费该关键字
-     */
-    public boolean tryConsumeKeyword(String keywordText) {
-        return lexer.tryConsumeKeyword(keywordText);
-    }
-
-    /**
-     * 消费并校验下一个记号同时满足 type 与 text。
-     *
-     * @param type 期望的语法角色
-     * @param text 期望的文本字面量
-     * @return 实际消费到的记号
-     */
-    public SflToken consumeToken(SflTokenType type, String text) {
-        return lexer.consumeMatched(type, text);
-    }
-
-    /**
-     * 消费并校验下一个记号同时满足 type 与 text；不匹配时使用语义化错误消息。
-     *
-     * @param type         期望的语法角色
-     * @param text         期望的文本字面量
-     * @param errorMessage 不匹配时抛出的 {@link SflException} 消息
-     * @return 实际消费到的记号
-     */
-    public SflToken consumeToken(SflTokenType type, String text, String errorMessage) {
-        return lexer.consumeMatched(type, text, errorMessage);
-    }
-
-    /**
-     * 消费指定符号记号。
-     *
-     * @param symbolText 符号字面量，见 {@link SlfKeyWords} 中的 {@code *_TEXT} 常量
-     * @return 已消费的符号记号
-     */
-    public SflToken consumeSymbol(String symbolText) {
-        return lexer.consumeSymbol(symbolText);
-    }
-
-    /**
-     * 消费指定符号记号；不匹配时使用语义化错误消息。
-     *
-     * @param symbolText   符号字面量
-     * @param errorMessage 不匹配时抛出的 {@link SflException} 消息
-     * @return 已消费的符号记号
-     */
-    public SflToken consumeSymbol(String symbolText, String errorMessage) {
-        return lexer.consumeSymbol(symbolText, errorMessage);
-    }
-
-    /**
-     * 消费顶层或子规则中的 flow 关键字（SEQ、STEP 等）。
-     * <p>
-     * 仅校验 type 为 {@link SflTokenType#KEYWORD}，不校验具体文本；
-     * 未知关键字的语义错误由 {@link #keywordToFlow()} 在查表后抛出。
-     * </p>
-     *
-     * @return 已消费的关键字记号
-     */
-    public SflToken consumeKeyword() {
-        SflToken token = lexer.consume();
-        if (token.getType() != SflTokenType.KEYWORD) {
-            throw new SflException("期望 KEYWORD，实际为 " + token.getType()
-                    + (token.getText().isEmpty() ? "" : " [" + token.getText() + "]")
-                    + "，位置: " + token.getPosition());
-        }
-        return token;
-    }
-
-    /**
-     * 消费指定文本的关键字记号。
-     *
-     * @param keywordText 关键字字面量
-     * @return 已消费的关键字记号
-     */
-    public SflToken consumeKeyword(String keywordText) {
-        return lexer.consumeKeyword(keywordText);
-    }
-
-    /**
-     * 消费指定文本的关键字记号；不匹配时使用语义化错误消息。
-     *
-     * @param keywordText  关键字字面量
-     * @param errorMessage 不匹配时抛出的 {@link SflException} 消息
-     * @return 已消费的关键字记号
-     */
-    public SflToken consumeKeyword(String keywordText, String errorMessage) {
-        return lexer.consumeKeyword(keywordText, errorMessage);
-    }
-
-    /**
-     * 消费用户字面量（stepCode、flowCode、表达式路径等）。
-     *
-     * @return 已消费的字面量记号
-     */
-    public SflToken consumeLiteral() {
-        return lexer.consumeLiteral();
-    }
-
-    /**
-     * 消费双引号字符串记号（IF 内联表达式正文等）。
-     *
-     * @return 已消费的字符串记号
-     */
-    public SflToken consumeQuotedString() {
-        return lexer.consumeQuotedString();
-    }
-
-    /**
-     * 消费双引号字符串记号；不匹配时使用语义化错误消息。
-     *
-     * @param errorMessage 不匹配时抛出的 {@link SflException} 消息
-     * @return 已消费的字符串记号
-     */
-    public SflToken consumeQuotedString(String errorMessage) {
-        return lexer.consumeQuotedString(errorMessage);
-    }
-
-    /**
-     * 返回当前前瞻 token，不消费。供各 {@link FlowNodeBuilder} 实现判断后续记号。
-     *
-     * @return 当前前瞻记号
-     */
-    public SflToken peek() {
-        return lexer.peek();
-    }
-
-    /**
-     * 判断前瞻记号是否同时满足 type 与 text。
-     *
-     * @param type 期望的语法角色
-     * @param text 期望的文本字面量
-     * @return {@code true} 表示当前前瞻记号与期望一致
-     */
-    public boolean nextTokenMatches(SflTokenType type, String text) {
-        return lexer.nextTokenMatches(type, text);
-    }
-
-    /**
-     * 判断前瞻记号是否为指定符号。
-     *
-     * @param symbolText 符号字面量
-     * @return {@code true} 表示下一个待消费记号为该符号
-     */
-    public boolean nextTokenIsSymbol(String symbolText) {
-        return lexer.nextTokenIsSymbol(symbolText);
-    }
-
-    /**
-     * 判断前瞻记号是否为指定关键字。
-     *
-     * @param keywordText 关键字字面量
-     * @return {@code true} 表示下一个待消费记号为该关键字
-     */
-    public boolean nextTokenIsKeyword(String keywordText) {
-        return lexer.nextTokenIsKeyword(keywordText);
-    }
-
-    /**
-     * 判断前瞻记号是否为用户字面量（{@link SflTokenType#LITERAL}）。
-     *
-     * @return {@code true} 表示下一个待消费记号为用户字面量
-     */
-    public boolean nextTokenIsLiteral() {
-        return lexer.nextTokenIsLiteral();
-    }
-
-    /**
-     * 判断前瞻记号是否为双引号字符串。
-     *
-     * @return {@code true} 表示下一个待消费记号为 QUOTED_STRING
-     */
-    public boolean nextTokenIsQuotedString() {
-        return lexer.nextTokenIsQuotedString();
-    }
-
-    /**
      * 解析逗号分隔的子 flow 列表，至少包含一项；拒绝空列表与尾随逗号。
      * <p>
      * 供 {@link SeqFlowNodeBuilder}、{@link ParallelFlowNodeBuilder} 及 IF 分支解析共享。
@@ -290,12 +189,12 @@ public class SflParser {
      */
     public List<FlowNode> parseFlowList() {
         List<FlowNode> list = new ArrayList<>();
-        if (nextTokenIsSymbol(SlfKeyWords.RPAREN_TEXT)) {
+        if (nextTokenMatches(SflTokenType.SYMBOL, SlfKeyWords.RPAREN)) {
             throw new SflException("参数列表不能为空，位置: " + lexer.peek().getPosition());
         }
         list.add(keywordToFlow());
-        while (tryConsumeSymbol(SlfKeyWords.COMMA_TEXT)) {
-            if (nextTokenIsSymbol(SlfKeyWords.RPAREN_TEXT)) {
+        while (tryConsumeToken(SflTokenType.SYMBOL, SlfKeyWords.COMMA)) {
+            if (nextTokenMatches(SflTokenType.SYMBOL, SlfKeyWords.RPAREN)) {
                 throw new SflException("参数列表末尾不允许有多余逗号，位置: " + lexer.peek().getPosition());
             }
             list.add(keywordToFlow());
@@ -303,8 +202,10 @@ public class SflParser {
         return list;
     }
 
+    /* ---------- 入口方法 ---------- */
+
     /**
-     * 将 SFL 文本解析为流程树根节点。
+     * 【入口方法】将 SFL 文本解析为流程树根节点。
      * <p>
      * 解析成功后额外消费 EOF 记号，确保源字符串尾部无未解析的残留记号，
      * 避免「只解析了前缀、后半段被静默忽略」类隐患。
@@ -320,7 +221,7 @@ public class SflParser {
         }
         SflParser parser = new SflParser(sflText);
         FlowNode root = parser.keywordToFlow();
-        parser.consumeSymbol(SlfKeyWords.EOF_TEXT);
+        parser.consumeMatched(SflTokenType.SYMBOL, SlfKeyWords.EOF_TEXT);
         return root;
     }
 }
