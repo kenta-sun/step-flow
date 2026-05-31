@@ -164,7 +164,7 @@ public class StepExecutor {
      * </p>
      *
      * @param contentType     StepHandler 对应的 StepContentType
-     * @param expression      表达式正文（已去除外围双引号并完成转义还原）
+     * @param expression      表达式
      * @param stepFlowContext 流程上下文
      * @return Handler 执行结果
      */

@@ -38,7 +38,7 @@ public class Step {
         // 参数集合
         Map<String, Object> contextMap = stepFlowContext.getContextMap();
         // 参数名称在参数集合中的映射
-        Map<String, String> paramNameMap = StepFlowUtils.getParamNameMap(oneOffParams);
+        Map<String, String> paramNameMap = this.getParamNameMap(oneOffParams);
 
         // 准备计算用到的参数
         Map<String, Object> vars = new HashMap<>();
@@ -75,6 +75,11 @@ public class Step {
         } else {
             return null;
         }
+    }
+
+    private Map<String, String> getParamNameMap(OneOffParams oneOffParams) {
+        if (oneOffParams == null) return null;
+        return oneOffParams.getParamNameMap();
     }
 
     public StepData getStepData() {

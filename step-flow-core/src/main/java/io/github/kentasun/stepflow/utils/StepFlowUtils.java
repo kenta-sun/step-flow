@@ -1,6 +1,5 @@
 package io.github.kentasun.stepflow.utils;
 
-import io.github.kentasun.stepflow.api.dto.OneOffParams;
 import io.github.kentasun.stepflow.exception.StepFlowException;
 
 import java.util.Collection;
@@ -102,11 +101,6 @@ public class StepFlowUtils {
 
     public static boolean isNotEmpty(Object[] array) {
         return !isEmpty(array);
-    }
-
-    public static Map<String, String> getParamNameMap(OneOffParams oneOffParams) {
-        if (oneOffParams == null) return null;
-        return oneOffParams.getParamNameMap();
     }
 
     /**
