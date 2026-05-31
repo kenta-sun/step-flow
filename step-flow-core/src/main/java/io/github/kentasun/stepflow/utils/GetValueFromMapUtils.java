@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Array;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,10 +24,86 @@ public class GetValueFromMapUtils {
     private static final Pattern SPLIT_PAT = Pattern.compile("\\.");
 
     /**
+     * 根据 {@code nameList} 从 {@code env} 中获取root数据，组成新的参数map
+     *
+     * @param nameList 参数名列表
+     * @param env      参数map
+     * @return 新参数map
+     */
+    public static Map<String, Object> getRootValueFromContextMap(List<String> nameList, Map<String, Object> env) {
+        if (StepFlowUtils.isEmpty(nameList) || StepFlowUtils.isEmpty(env)) {
+            return new HashMap<>();
+        }
+
+        Map<String, Object> newEnv = new HashMap<>();
+        for (String name : nameList) {
+            if (name == null) {
+                continue;
+            }
+            if (containsSymbol(name) && !env.containsKey(name)) {
+                try {
+                    fastGetRootProperty(name, env, newEnv);
+                } catch (Throwable t) {
+                    log.info("Could not get root property [{}]", name);
+                }
+            } else {
+                Object val = env.get(name);
+                if (val != null) {
+                    newEnv.put(name, val);
+                }
+            }
+        }
+        return newEnv;
+    }
+
+    /**
+     * 从 {@code env} 中获取 {@code name} 对应的root数据，用该root数据对应的名字存入 {@code newEnv}
+     *
+     * @param name   参数名，支持 {@code a(b).c} 、 {@code a[1].c}
+     * @param env    参数map
+     * @param newEnv 新参数map
+     */
+    private static void fastGetRootProperty(String name, Map<String, Object> env, Map<String, Object> newEnv) {
+        // 根据符号“.”拆分 name
+        String[] names = SPLIT_PAT.split(name);
+        // 由于只需要root数据，所以只取第一个，作为root数据名字
+        String rName = names[0];
+        // 处理 a(b).c 、 a[1].c 场景，获得去除括号后的root数据名字
+        switch (rName.charAt(rName.length() - 1)) {
+            case ']':
+                int idx1 = rName.indexOf("[");
+                if (idx1 < 0) {
+                    throw new IllegalArgumentException("Should not happen, doesn't contains '['");
+                }
+                rName = rName.substring(0, idx1);
+                break;
+            case ')':
+                int idx2 = rName.indexOf("(");
+                if (idx2 < 0) {
+                    throw new IllegalArgumentException("Should not happen, doesn't contains '('");
+                }
+                rName = rName.substring(0, idx2);
+                break;
+        }
+
+        // 重复的root数据不再重复存入
+        if (newEnv.containsKey(rName)) {
+            return;
+        }
+
+        // 根据root数据名字获取root数据
+        Object val = env.get(rName);
+        // 存入 newEnv
+        if (val != null) {
+            newEnv.put(rName, val);
+        }
+    }
+
+    /**
      * 从 {@code Map<String, Object>} 中获取数据
      *
      * @param name 参数名，支持 {@code a.b[0].c} 类型
-     * @param env 参数map
+     * @param env  参数map
      * @return 获取到的参数
      */
     public static Object getValueFromContextMap(String name, Map<String, Object> env) {
@@ -37,8 +114,9 @@ public class GetValueFromMapUtils {
                 log.info("Could not get property [{}]", name);
                 return null;
             }
+        } else {
+            return env.get(name);
         }
-        return env.get(name);
     }
 
     private static Object fastGetProperty(String name, Map<String, Object> env) {
@@ -140,7 +218,7 @@ public class GetValueFromMapUtils {
     /**
      * 从非 {@link Map} 类型的Java对象中获取参数
      *
-     * @param obj java对象
+     * @param obj  java对象
      * @param name 参数名
      * @return 获取到的参数
      */
@@ -180,7 +258,7 @@ public class GetValueFromMapUtils {
     /**
      * 根据下标，从数组中获取数据
      *
-     * @param a 数组对象
+     * @param a     数组对象
      * @param index 下标
      * @return 从数组中获取到的数据
      */

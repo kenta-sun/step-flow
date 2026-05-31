@@ -5,18 +5,22 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link GetValueFromMapUtils#getValueFromContextMap} 的单元测试。
+ * {@link GetValueFromMapUtils} 工具类单元测试。
  *
- * <p>覆盖简单键查找、带点路径解析、Map 嵌套、JavaBean 属性、下标与 Map 键访问等分支。</p>
+ * <p>覆盖 {@link GetValueFromMapUtils#getValueFromContextMap} 与
+ * {@link GetValueFromMapUtils#getRootValueFromContextMap} 的各类分支与极端场景。</p>
  *
  * @author kenta-sun
  */
@@ -397,6 +401,487 @@ public class GetValueFromMapUtilsTest {
             Map<String, Object> env = env("root", env("flags", flags));
 
             assertEquals(true, GetValueFromMapUtils.getValueFromContextMap("root.flags[0]", env));
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // getRootValueFromContextMap：从路径表达式中提取 root 数据组成新 env
+    // -------------------------------------------------------------------------
+
+    @Nested
+    @DisplayName("getRootValueFromContextMap")
+    class GetRootValueFromContextMapTests {
+
+        /**
+         * 断言 newEnv 仅含指定键值对（键集合完全一致）。
+         */
+        private void assertNewEnvExactly(Map<String, Object> expected, Map<String, Object> actual) {
+            assertEquals(expected.size(), actual.size(), "newEnv 键数量不一致");
+            for (Map.Entry<String, Object> entry : expected.entrySet()) {
+                assertTrue(actual.containsKey(entry.getKey()), "缺少键: " + entry.getKey());
+                assertSame(entry.getValue(), actual.get(entry.getKey()), "键值引用不一致: " + entry.getKey());
+            }
+        }
+
+        @Nested
+        @DisplayName("空入参与边界")
+        class EmptyAndBoundaryInputs {
+
+            @Test
+            @DisplayName("nameList 为 null 时返回空 map")
+            void nullNameListReturnsEmptyMap() {
+                Map<String, Object> env = env("a", "v");
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(null, env);
+                assertTrue(result.isEmpty());
+            }
+
+            @Test
+            @DisplayName("nameList 为空集合时返回空 map")
+            void emptyNameListReturnsEmptyMap() {
+                Map<String, Object> env = env("a", "v");
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.emptyList(), env);
+                assertTrue(result.isEmpty());
+            }
+
+            @Test
+            @DisplayName("env 为 null 时返回空 map")
+            void nullEnvReturnsEmptyMap() {
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList("a.b"), null);
+                assertTrue(result.isEmpty());
+            }
+
+            @Test
+            @DisplayName("env 为空 map 时返回空 map")
+            void emptyEnvReturnsEmptyMap() {
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList("a.b", "foo"), new HashMap<>());
+                assertTrue(result.isEmpty());
+            }
+
+            @Test
+            @DisplayName("nameList 含 null 元素时跳过该元素")
+            void nullElementInNameListIsSkipped() {
+                Map<String, Object> env = env("foo", 42);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList(null, "foo", null), env);
+                assertNewEnvExactly(env("foo", 42), result);
+            }
+
+            @Test
+            @DisplayName("空字符串 name 作为字面量键写入 newEnv")
+            void emptyStringNameAsLiteralKey() {
+                Map<String, Object> env = new HashMap<>();
+                env.put("", "empty-key-value");
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList(""), env);
+                assertNewEnvExactly(env("", "empty-key-value"), result);
+            }
+        }
+
+        @Nested
+        @DisplayName("简单键与字面量带点/括号键")
+        class SimpleAndLiteralKeys {
+
+            @Test
+            @DisplayName("无符号名称直接 env.get 并以原名作为 newEnv 键")
+            void simpleKeyUsesOriginalName() {
+                Map<String, Object> root = env("inner", "deep");
+                Map<String, Object> env = env("a", root, "foo", 99);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList("a", "foo"), env);
+                assertNewEnvExactly(env("a", root, "foo", 99), result);
+            }
+
+            @Test
+            @DisplayName("简单键不存在时不写入 newEnv（当前实现跳过 null 值）")
+            void missingSimpleKeyIsSkipped() {
+                // env 不能为空，否则会在方法入口直接返回空 map
+                Map<String, Object> env = env("other", "x");
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("missing"), env);
+                assertTrue(result.isEmpty(), "缺失键对应 null，当前实现不会 put");
+            }
+
+            @Test
+            @DisplayName("简单键对应 env 值为 null 时不写入 newEnv")
+            void simpleKeyWithNullValueIsSkipped() {
+                Map<String, Object> env = new HashMap<>();
+                env.put("key", null);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("key"), env);
+                assertTrue(result.isEmpty(), "null 值当前实现不会写入 newEnv");
+            }
+
+            @Test
+            @DisplayName("env 含字面量带点键 a.b 时整体作为 root，不做路径解析")
+            void literalDottedKeyStoredAsWhole() {
+                Map<String, Object> nested = env("b", "navigated");
+                Map<String, Object> env = env("a.b", "literal", "a", nested);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("a.b"), env);
+                assertNewEnvExactly(env("a.b", "literal"), result);
+                assertFalse(result.containsKey("a"));
+            }
+
+            @Test
+            @DisplayName("env 含字面量括号键 list[0] 时直接写入")
+            void literalBracketKeyStoredAsWhole() {
+                List<String> list = Arrays.asList("first", "second");
+                Map<String, Object> env = env("list[0]", "literal", "list", list);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("list[0]"), env);
+                assertNewEnvExactly(env("list[0]", "literal"), result);
+                assertFalse(result.containsKey("list"));
+            }
+
+            @Test
+            @DisplayName("env 含字面量 Map 键表达式 data(k2) 时直接写入")
+            void literalParenKeyStoredAsWhole() {
+                Map<String, Object> dataMap = env("k1", "v1", "k2", "v2");
+                Map<String, Object> env = env("data(k2)", "literal", "data", dataMap);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("data(k2)"), env);
+                assertNewEnvExactly(env("data(k2)", "literal"), result);
+                assertFalse(result.containsKey("data"));
+            }
+        }
+
+        @Nested
+        @DisplayName("路径表达式提取 root（点路径）")
+        class DotPathRootExtraction {
+
+            @Test
+            @DisplayName("a.b 提取 root 键 a")
+            void oneLevelPathExtractsRootA() {
+                Map<String, Object> inner = env("b", "value");
+                Map<String, Object> env = env("a", inner);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("a.b"), env);
+                assertNewEnvExactly(env("a", inner), result);
+            }
+
+            @Test
+            @DisplayName("a.b.c 仍只提取第一段 root 键 a")
+            void multiLevelPathExtractsFirstSegmentOnly() {
+                Map<String, Object> c = env("c", 99);
+                Map<String, Object> b = env("b", c);
+                Map<String, Object> env = env("a", b);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("a.b.c"), env);
+                assertNewEnvExactly(env("a", b), result);
+            }
+
+            @Test
+            @DisplayName("路径 root 在 env 中不存在时不写入 newEnv")
+            void missingRootIsSkipped() {
+                Map<String, Object> env = env("other", "x");
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("a.b"), env);
+                assertTrue(result.isEmpty(), "root 缺失得到 null，当前实现不会 put");
+            }
+
+            @Test
+            @DisplayName("路径 root 值为 null 时不写入 newEnv")
+            void nullRootValueIsSkipped() {
+                Map<String, Object> env = new HashMap<>();
+                env.put("a", null);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("a.b"), env);
+                assertTrue(result.isEmpty(), "root 值为 null 时当前实现不会 put");
+            }
+
+            @Test
+            @DisplayName("连续点 a..b 仍提取第一段 a")
+            void consecutiveDotsStillUseFirstSegment() {
+                Map<String, Object> root = env("b", "v");
+                Map<String, Object> env = env("a", root);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("a..b"), env);
+                assertNewEnvExactly(env("a", root), result);
+            }
+        }
+
+        @Nested
+        @DisplayName("路径表达式提取 root（下标与 Map 键）")
+        class BracketAndParenRootExtraction {
+
+            @Test
+            @DisplayName("list[0] 提取 root 键 list")
+            void listIndexExtractsListRoot() {
+                List<String> list = Arrays.asList("first", "second");
+                Map<String, Object> env = env("list", list);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("list[0]"), env);
+                assertNewEnvExactly(env("list", list), result);
+            }
+
+            @Test
+            @DisplayName("list[0].name 提取 root 键 list")
+            void listIndexWithSuffixExtractsListRoot() {
+                List<String> list = Arrays.asList("first", "second");
+                Map<String, Object> env = env("list", list);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("list[0].name"), env);
+                assertNewEnvExactly(env("list", list), result);
+            }
+
+            @Test
+            @DisplayName("root.list[0] 提取 root 键 root")
+            void nestedListIndexExtractsOuterRoot() {
+                List<String> list = Arrays.asList("first", "second");
+                Map<String, Object> env = env("root", env("list", list));
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("root.list[0]"), env);
+                assertSame(env.get("root"), result.get("root"));
+            }
+
+            @Test
+            @DisplayName("data(k2) 提取 root 键 data")
+            void mapKeyExtractsDataRoot() {
+                Map<String, Object> dataMap = env("k1", "v1", "k2", "v2");
+                Map<String, Object> env = env("data", dataMap);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("data(k2)"), env);
+                assertNewEnvExactly(env("data", dataMap), result);
+            }
+
+            @Test
+            @DisplayName("a.attrs(code) 提取 root 键 a")
+            void nestedMapKeyExtractsFirstRoot() {
+                Map<String, Object> attrs = env("code", "ERR_001");
+                Map<String, Object> env = env("a", env("attrs", attrs));
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("a.attrs(code)"), env);
+                assertSame(env.get("a"), result.get("a"));
+            }
+
+            @Test
+            @DisplayName("a(b).c 提取 root 键 a")
+            void parenBeforeDotExtractsRootA() {
+                Map<String, Object> inner = env("b", "v2", "c", "v3");
+                Map<String, Object> env = env("a", inner);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("a(b).c"), env);
+                assertNewEnvExactly(env("a", inner), result);
+            }
+        }
+
+        @Nested
+        @DisplayName("去重与处理顺序")
+        class DeduplicationAndOrder {
+
+            @Test
+            @DisplayName("多个路径共享同一 root 时只保留首次写入")
+            void sameRootFromMultiplePathsDeduped() {
+                Map<String, Object> rootA = env("b", "bv", "c", "cv");
+                Map<String, Object> env = env("a", rootA);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList("a.b", "a.c", "a.b.c"), env);
+                assertEquals(1, result.size());
+                assertSame(rootA, result.get("a"));
+            }
+
+            @Test
+            @DisplayName("先写入简单键 a 后路径 a.b 不再覆盖")
+            void simpleKeyFirstThenPathDoesNotOverwrite() {
+                Map<String, Object> rootA = env("b", "bv");
+                Map<String, Object> env = env("a", rootA);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList("a", "a.b"), env);
+                assertSame(rootA, result.get("a"));
+            }
+
+            @Test
+            @DisplayName("先路径 a.b 后简单键 a 会覆盖为 env.get(a)（同引用则不变）")
+            void pathFirstThenSimpleKeyOverwritesWithSameReference() {
+                Map<String, Object> rootA = env("b", "bv");
+                Map<String, Object> env = env("a", rootA);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList("a.b", "a"), env);
+                assertSame(rootA, result.get("a"));
+            }
+
+            @Test
+            @DisplayName("不同 root 的路径各自独立写入")
+            void differentRootsBothPresent() {
+                Map<String, Object> rootA = env("x", 1);
+                Map<String, Object> rootB = env("y", 2);
+                Map<String, Object> env = env("a", rootA, "b", rootB);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList("a.x", "b.y"), env);
+                assertNewEnvExactly(env("a", rootA, "b", rootB), result);
+            }
+
+            @Test
+            @DisplayName("重复简单键以后者覆盖前者")
+            void duplicateSimpleKeysLastWins() {
+                Map<String, Object> env = env("foo", "first");
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList("foo", "foo"), env);
+                assertEquals("first", result.get("foo"));
+                assertEquals(1, result.size());
+            }
+        }
+
+        @Nested
+        @DisplayName("混合场景")
+        class MixedScenarios {
+
+            @Test
+            @DisplayName("字面量键 a.b 与路径 a.c 并存于 newEnv")
+            void literalDottedKeyAndPathRootCoexist() {
+                Map<String, Object> nested = env("c", "cv");
+                Map<String, Object> env = env("a.b", "literal", "a", nested);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList("a.b", "a.c"), env);
+                assertEquals(2, result.size());
+                assertEquals("literal", result.get("a.b"));
+                assertSame(nested, result.get("a"));
+            }
+
+            @Test
+            @DisplayName("简单键、点路径、下标路径、Map 键路径混合")
+            void mixedNameTypes() {
+                List<String> list = Arrays.asList("L0");
+                Map<String, Object> dataMap = env("k", "v");
+                Map<String, Object> rootA = env("b", "ab");
+                // 四组键值超出 env(...) 辅助方法容量，直接构造 HashMap
+                Map<String, Object> env = new HashMap<>();
+                env.put("plain", "P");
+                env.put("a", rootA);
+                env.put("list", list);
+                env.put("data", dataMap);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList("plain", "a.b.c", "list[0].x", "data(k)"), env);
+                assertEquals(4, result.size());
+                assertEquals("P", result.get("plain"));
+                assertSame(rootA, result.get("a"));
+                assertSame(list, result.get("list"));
+                assertSame(dataMap, result.get("data"));
+            }
+
+            @Test
+            @DisplayName("JavaBean 作为 root 对象时存入原始引用")
+            void beanRootStoredByReference() {
+                SampleBean bean = new SampleBean("Alice", true);
+                Map<String, Object> env = env("user", bean);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("user.name"), env);
+                assertSame(bean, result.get("user"));
+            }
+        }
+
+        @Nested
+        @DisplayName("极端与异常路径")
+        class ExtremePaths {
+
+            @Test
+            @DisplayName("以点开头 .a.b 解析失败时不写入任何键")
+            void leadingDotPathFailsSilently() {
+                Map<String, Object> env = env("a", env("b", "v"));
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList(".a.b"), env);
+                assertTrue(result.isEmpty(), "异常被吞掉后 newEnv 应为空");
+            }
+
+            @Test
+            @DisplayName("仅一个点 . 解析失败时不写入任何键")
+            void dotOnlyPathFailsSilently() {
+                Map<String, Object> env = env("a", "v");
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("."), env);
+                assertTrue(result.isEmpty());
+            }
+
+            @Test
+            @DisplayName("[0].x 解析后 root 名为空串且 env 中空串键有非 null 值时写入")
+            void bracketOnlyFirstSegmentProducesEmptyRootKey() {
+                Map<String, Object> env = new HashMap<>();
+                env.put("", "empty-root");
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("[0].x"), env);
+                assertTrue(result.containsKey(""));
+                assertEquals("empty-root", result.get(""));
+            }
+
+            @Test
+            @DisplayName("[0] 解析后 root 名为空串且对应值为 null 时不写入")
+            void bracketZeroOnlyWithNullRootIsSkipped() {
+                // env 需非空才能进入循环；此处不含空串键，env.get("") 为 null
+                Map<String, Object> env = env("placeholder", "x");
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("[0]"), env);
+                assertTrue(result.isEmpty(), "空串 root 对应 null 时不写入");
+            }
+
+            @Test
+            @DisplayName("[0] 在 env 为空 map 时因入口校验直接返回空 map")
+            void bracketZeroWithEmptyEnvReturnsEmptyMap() {
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("[0]"), new HashMap<>());
+                assertTrue(result.isEmpty(), "env 为空时在入口即返回，不会解析 [0]");
+            }
+
+            @Test
+            @DisplayName("仅含左括号无右括号时不走路径解析，按字面量键处理")
+            void unbalancedBracketTreatedAsLiteralKey() {
+                Map<String, Object> env = env("a[1", "literal");
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("a[1"), env);
+                assertNewEnvExactly(env("a[1", "literal"), result);
+            }
+
+            @Test
+            @DisplayName("name 含点、env 无字面量键且 root 不存在时不写入")
+            void pathWithMissingRootAndNoLiteralKey() {
+                Map<String, Object> env = env("other", "x");
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("missing.path"), env);
+                assertTrue(result.isEmpty());
+            }
+        }
+
+        @Nested
+        @DisplayName("null 过滤与去重交互")
+        class NullFilteringAndDedup {
+
+            @Test
+            @DisplayName("首次路径因 root 为 null 未写入时，后续同 root 路径仍可写入")
+            void secondPathCanFillRootAfterFirstSkippedNull() {
+                Map<String, Object> rootA = env("b", "bv");
+                Map<String, Object> env = new HashMap<>();
+                env.put("a", null);
+                env.put("other", rootA);
+                // 第一条 a.b：root a 为 null，跳过；第二条 other.x：正常写入
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList("a.b", "other.x"), env);
+                assertEquals(1, result.size());
+                assertSame(rootA, result.get("other"));
+                assertFalse(result.containsKey("a"));
+            }
+
+            @Test
+            @DisplayName("root 已成功写入后，同 root 的后续路径不会重复处理")
+            void dedupAfterSuccessfulRootWrite() {
+                Map<String, Object> rootA = env("b", "bv", "c", "cv");
+                Map<String, Object> env = env("a", rootA);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Arrays.asList("a.b", "a.c"), env);
+                assertEquals(1, result.size());
+                assertSame(rootA, result.get("a"));
+            }
+
+            @Test
+            @DisplayName("字面量键值为 null 时不写入")
+            void literalKeyWithNullValueIsSkipped() {
+                Map<String, Object> env = new HashMap<>();
+                env.put("a.b", null);
+                Map<String, Object> result = GetValueFromMapUtils.getRootValueFromContextMap(
+                        Collections.singletonList("a.b"), env);
+                assertTrue(result.isEmpty());
+            }
         }
     }
 
