@@ -1,6 +1,5 @@
 package io.github.kentasun.stepflow.utils;
 
-import io.github.kentasun.stepflow.cache.StepFlowSoftCache;
 import io.github.kentasun.stepflow.exception.StepFlowException;
 
 import java.lang.invoke.MethodHandle;

@@ -1,4 +1,4 @@
-package io.github.kentasun.stepflow.cache;
+package io.github.kentasun.stepflow.utils;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;

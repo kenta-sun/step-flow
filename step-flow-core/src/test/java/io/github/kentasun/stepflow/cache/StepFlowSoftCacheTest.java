@@ -1,5 +1,6 @@
 package io.github.kentasun.stepflow.cache;
 
+import io.github.kentasun.stepflow.utils.StepFlowSoftCache;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
