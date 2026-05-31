@@ -89,12 +89,12 @@ public class JavaExpressionTest {
                         .flowType("CALC")
                         .content("SEQ("
                                 + "PARALLEL("
-                                + "STEP(COMMON001).PARAM(a=dto.num1,b=dto.num2).result(add=calc_add),"
-                                + "STEP(COMMON002).PARAM(a=dto.num3,b=dto.num4).result(subtract=calc_subtract)"
+                                + "STEP(COMMON001).PARAM(a=dto.num1,b=dto.num2).RESULT(add=calc_add),"
+                                + "STEP(COMMON002).PARAM(a=dto.num3,b=dto.num4).RESULT(subtract=calc_subtract)"
                                 + "),"
                                 + "IF(STEP(CONDITION001))"
-                                + "THEN(STEP(COMMON003).PARAM(a=calc_add,b=calc_subtract).result(multiply=calc_multiply))"
-                                + "ELSE(STEP(COMMON004).PARAM(a=calc_add,b=calc_subtract).result(divide=calc_divide))"
+                                + "THEN(STEP(COMMON003).PARAM(a=calc_add,b=calc_subtract).RESULT(multiply=calc_multiply))"
+                                + "ELSE(STEP(COMMON004).PARAM(a=calc_add,b=calc_subtract).RESULT(divide=calc_divide))"
                                 + "ENDIF,"
                                 + "STEP(JAVA001)"
                                 + ")")

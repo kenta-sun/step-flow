@@ -144,13 +144,13 @@ class SflParserParseExceptionTest {
                         "STEP 不允许重复声明 .PARAM(...)，位置: 第 3 行第 2 列（偏移 21）"),
                 c("step_dup_result", lines(
                         "STEP(a)",
-                        ".result(x=y)",
-                        ".result(z=w)"),
-                        "STEP 不允许重复声明 .result(...)，位置: 第 3 行第 2 列（偏移 22）"),
+                        ".RESULT(x=y)",
+                        ".RESULT(z=w)"),
+                        "STEP 不允许重复声明 .RESULT(...)，位置: 第 3 行第 2 列（偏移 22）"),
                 c("step_unknown_suffix", lines(
                         "STEP(a)",
                         ".THEN(x=y)"),
-                        "STEP 后缀未知 [THEN]，仅支持 PARAM / result，位置: 第 2 行第 2 列（偏移 9）"),
+                        "STEP 后缀未知 [THEN]，仅支持 PARAM / RESULT，位置: 第 2 行第 2 列（偏移 9）"),
                 c("step_param_trailing_comma", lines(
                         "STEP(a)",
                         ".PARAM(",
@@ -163,14 +163,14 @@ class SflParserParseExceptionTest {
                         "       x=z)"), "PARAM 映射键重复: x，位置: 第 3 行第 8 列（偏移 27）"),
                 c("step_result_trailing_comma", lines(
                         "STEP(a)",
-                        ".result(",
+                        ".RESULT(",
                         "  x=y,",
                         ")"),
-                        "result 映射列表末尾不允许有多余逗号，位置: 第 4 行第 1 列（偏移 24）"),
+                        "RESULT 映射列表末尾不允许有多余逗号，位置: 第 4 行第 1 列（偏移 24）"),
                 c("step_result_dup_key", lines(
                         "STEP(a)",
-                        ".result(x=y,",
-                        "        x=z)"), "result 映射键重复: x，位置: 第 3 行第 9 列（偏移 29）"),
+                        ".RESULT(x=y,",
+                        "        x=z)"), "RESULT 映射键重复: x，位置: 第 3 行第 9 列（偏移 29）"),
 
                 // ----- SubFlowFlowNodeBuilder -----
                 c("subflow_not_literal", lines(

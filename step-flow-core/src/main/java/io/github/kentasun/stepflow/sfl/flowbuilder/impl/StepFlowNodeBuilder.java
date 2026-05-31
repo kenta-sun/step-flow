@@ -14,7 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * STEP 关键字解析策略：解析 {@code STEP(stepCode)[.PARAM(k=v,...)][.result(k=v,...)]}
+ * STEP 关键字解析策略：解析 {@code STEP(stepCode)[.PARAM(k=v,...)][.RESULT(k=v,...)]}
  * 并构造 {@link StepFlowNode}。
  * <p>
  * PARAM / result 后缀各最多出现一次；空映射列表规范化为 {@code null}，与 JSON 路径下
@@ -33,7 +33,7 @@ public class StepFlowNodeBuilder implements FlowNodeBuilder {
         Map<String, String> paramNameMap = null;
         Map<String, String> resultNameMap = null;
 
-        // 循环消费可选的 .PARAM(...) / .result(...) 后缀
+        // 循环消费可选的 .PARAM(...) / .RESULT(...) 后缀
         while (parser.tryConsumeToken(SflTokenType.SYMBOL, SlfKeyWords.DOT)) {
             SflToken suffix = parser.consumeMatched(SflTokenType.KEYWORD);
             if (suffix.isKeyword(SlfKeyWords.PARAM)) {
@@ -62,7 +62,7 @@ public class StepFlowNodeBuilder implements FlowNodeBuilder {
     }
 
     /**
-     * 解析 {@code .PARAM(a=b,c=d)} 或 {@code .result(x=y)} 括号内的键值映射列表。
+     * 解析 {@code .PARAM(a=b,c=d)} 或 {@code .RESULT(x=y)} 括号内的键值映射列表。
      * <p>
      * 使用 {@link LinkedHashMap} 保持声明顺序；重复键在解析期拒绝；空括号返回 {@code null}。
      * </p>

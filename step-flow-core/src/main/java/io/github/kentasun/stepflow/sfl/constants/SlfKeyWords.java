@@ -59,7 +59,7 @@ public final class SlfKeyWords {
     /** 并行执行容器：{@code PARALLEL(child, child, ...)} */
     public static final String PARALLEL = "PARALLEL";
 
-    /** 单步执行：{@code STEP(stepCode)[.PARAM(...)][.result(...)]} */
+    /** 单步执行：{@code STEP(stepCode)[.PARAM(...)][.RESULT(...)]} */
     public static final String STEP = "STEP";
 
     /** 子流程引用：{@code SUB_FLOW(flowCode)} */
@@ -93,8 +93,8 @@ public final class SlfKeyWords {
     /** STEP 入参映射后缀：{@code .PARAM(k=v,...)} */
     public static final String PARAM = "PARAM";
 
-    /** STEP 出参映射后缀：{@code .result(k=v,...)} */
-    public static final String RESULT = "result";
+    /** STEP 出参映射后缀：{@code .RESULT(k=v,...)} */
+    public static final String RESULT = "RESULT";
 
     // -------------------------------------------------------------------------
     // 关键字集合（供词法器区分 KEYWORD 与 LITERAL）
