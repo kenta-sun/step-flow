@@ -1,4 +1,4 @@
-package io.github.kentasun.stepflow.utils;
+package io.github.kentasun.stepflow.api.utils;
 
 import io.github.kentasun.stepflow.api.exception.StepFlowException;
 import org.slf4j.Logger;
@@ -42,11 +42,26 @@ public class GetValueFromMapUtils {
             }
             if (containsSymbol(name) && !env.containsKey(name)) {
                 try {
-                    fastGetRootProperty(name, env, newEnv);
+                    // 获取 rootName
+                    String rootName = extractRootName(name);
+                    // 重复的root数据不再重复存入
+                    if (newEnv.containsKey(rootName)) {
+                        continue;
+                    }
+                    // 根据 rootName 获取 root 数据
+                    Object val = env.get(rootName);
+                    // 存入 newEnv
+                    if (val != null) {
+                        newEnv.put(rootName, val);
+                    }
                 } catch (Throwable t) {
                     log.info("Could not get root property [{}]", name);
                 }
             } else {
+                // 重复的数据不再重复存入
+                if (newEnv.containsKey(name)) {
+                    continue;
+                }
                 Object val = env.get(name);
                 if (val != null) {
                     newEnv.put(name, val);
@@ -57,45 +72,25 @@ public class GetValueFromMapUtils {
     }
 
     /**
-     * 从 {@code env} 中获取 {@code name} 对应的root数据，用该root数据对应的名字存入 {@code newEnv}
-     *
-     * @param name   参数名，支持 {@code a(b).c} 、 {@code a[1].c}
-     * @param env    参数map
-     * @param newEnv 新参数map
+     * 从 {@code a.b.c} {@code a[0].b} {@code a(0).b} 里取 root 名 a，示意用
      */
-    private static void fastGetRootProperty(String name, Map<String, Object> env, Map<String, Object> newEnv) {
-        // 根据符号“.”拆分 name
-        String[] names = SPLIT_PAT.split(name);
-        // 由于只需要root数据，所以只取第一个，作为root数据名字
-        String rName = names[0];
-        // 处理 a(b).c 、 a[1].c 场景，获得去除括号后的root数据名字
-        switch (rName.charAt(rName.length() - 1)) {
-            case ']':
-                int idx1 = rName.indexOf("[");
-                if (idx1 < 0) {
-                    throw new IllegalArgumentException("Should not happen, doesn't contains '['");
-                }
-                rName = rName.substring(0, idx1);
-                break;
-            case ')':
-                int idx2 = rName.indexOf("(");
-                if (idx2 < 0) {
-                    throw new IllegalArgumentException("Should not happen, doesn't contains '('");
-                }
-                rName = rName.substring(0, idx2);
-                break;
-        }
+    private static String extractRootName(String key) {
+        int end = -1;
+        end = minIndexOf(key, '.', end);
+        end = minIndexOf(key, '[', end);
+        end = minIndexOf(key, '(', end);
+        return end < 0 ? key : key.substring(0, end);
+    }
 
-        // 重复的root数据不再重复存入
-        if (newEnv.containsKey(rName)) {
-            return;
-        }
-
-        // 根据root数据名字获取root数据
-        Object val = env.get(rName);
-        // 存入 newEnv
-        if (val != null) {
-            newEnv.put(rName, val);
+    private static int minIndexOf(String str, char aChar, int lastIndex) {
+        int i = str.indexOf(aChar);
+        if (i < 0) { // -1，说明没找到，直接返回旧的 index
+            return lastIndex;
+        } else if (lastIndex < 0) { // lastIndex 为 -1，直接返回 i
+            return i;
+        } else {
+            // i 更小，返回 i；相等，或者 lastIndex 更小，返回 lastIndex
+            return Math.min(i, lastIndex);
         }
     }
 
@@ -249,7 +244,7 @@ public class GetValueFromMapUtils {
      * 名字里面是否有 {@code .}、{@code []}、{@code ()}
      *
      * @param name 待校验的名称字符串
-     * @return {@code true} -有点；{@code false} -没有点
+     * @return {@code true} -有符号；{@code false} -没有符号
      */
     private static boolean containsSymbol(String name) {
         return name.contains(".") || (name.contains("[") && name.contains("]")) || (name.contains("(") && name.contains(")"));

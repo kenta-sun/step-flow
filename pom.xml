@@ -51,7 +51,7 @@
         <!-- 编译器插件版本：集中维护 -->
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
         <!-- 日志框架 -->
-        <slf4j-api.version>1.7.36</slf4j-api.version>
+        <slf4j.version>1.7.36</slf4j.version>
     </properties>
 
     <!-- 模块声明 -->
@@ -107,7 +107,13 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>${slf4j-api.version}</version>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>test</scope>
             </dependency>
             <!-- 补充 Spring @Nullable 注解的依赖 -->
             <dependency>

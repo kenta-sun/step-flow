@@ -6,7 +6,7 @@ import io.github.kentasun.stepflow.api.dto.StepFlowContext;
 import io.github.kentasun.stepflow.dto.ExecutorsContext;
 import io.github.kentasun.stepflow.flow.dto.FlowNodeValidateContext;
 import io.github.kentasun.stepflow.step.dto.Step;
-import io.github.kentasun.stepflow.utils.StepFlowUtils;
+import io.github.kentasun.stepflow.api.utils.StepFlowUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,12 +38,7 @@ public class StepFlowNode extends FlowNode {
     @Override
     public void execute(StepFlowContext stepFlowContext, ExecutorsContext executorsContext) {
         /* 执行 step */
-        Object res = executorsContext.executeByStepCode(
-                this.stepCode,
-                stepFlowContext,
-                OneOffParams.builder()
-                        .paramNameMap(this.paramNameMap)
-                        .build());
+        Object res = this.executeThenReturnRes(stepFlowContext, executorsContext);
 
         /* 组装 resMap */
         Map<String, Object> resMap;

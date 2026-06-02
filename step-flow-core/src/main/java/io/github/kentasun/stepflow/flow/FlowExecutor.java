@@ -10,7 +10,7 @@ import io.github.kentasun.stepflow.flow.dto.FlowNodeValidateContext;
 import io.github.kentasun.stepflow.flow.dto.node.FlowNode;
 import io.github.kentasun.stepflow.sfl.SflParser;
 import io.github.kentasun.stepflow.step.StepExecutor;
-import io.github.kentasun.stepflow.utils.StepFlowUtils;
+import io.github.kentasun.stepflow.api.utils.StepFlowUtils;
 import org.slf4j.Logger;
 
 import java.util.*;

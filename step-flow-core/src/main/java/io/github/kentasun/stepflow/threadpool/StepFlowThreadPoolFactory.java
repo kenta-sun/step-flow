@@ -1,7 +1,7 @@
 package io.github.kentasun.stepflow.threadpool;
 
 import io.github.kentasun.stepflow.config.StepFlowConfigProperties;
-import io.github.kentasun.stepflow.utils.StepFlowUtils;
+import io.github.kentasun.stepflow.api.utils.StepFlowUtils;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;

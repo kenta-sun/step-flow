@@ -1,13 +1,13 @@
 package io.github.kentasun.stepflow;
 
 import io.github.kentasun.aviatororacle.number.OraDecimal;
-import io.github.kentasun.stepflow.dto.DateCalcDTO;
-import io.github.kentasun.stepflow.api.flow.dto.InputFlow;
 import io.github.kentasun.stepflow.api.flow.FlowProvider;
-import io.github.kentasun.stepflow.api.step.dto.StepData;
+import io.github.kentasun.stepflow.api.flow.dto.InputFlow;
+import io.github.kentasun.stepflow.api.step.StepDataProvider;
+import io.github.kentasun.stepflow.api.step.dto.StepInputData;
 import io.github.kentasun.stepflow.aviatororacle.constants.AviatorOracleStepContentType;
 import io.github.kentasun.stepflow.aviatororacle.handler.AviatorOracleStepHandler;
-import io.github.kentasun.stepflow.api.step.StepDataProvider;
+import io.github.kentasun.stepflow.dto.DateCalcDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -29,95 +29,85 @@ public class AviatorOracleExpressionTest {
         // ---- Step 数据定义 ----
         StepDataProvider stepDataProvider = () -> Arrays.asList(
                 // DC001: months_between 计算月数差，trunc 保留 4 位小数
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("DC001")
                         .stepName("calc_months_raw")
                         .stepType("DATE")
                         .contentType(AviatorOracleStepContentType.AVIATOR_ORA)
                         .content("trunc(months_between(endDate, startDate), 4)")
-                        .paramNameList(Arrays.asList("endDate", "startDate"))
                         .build(),
                 // DC002: abs 取带负号数值的绝对值
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("DC002")
                         .stepName("calc_abs_val")
                         .stepType("DATE")
                         .contentType(AviatorOracleStepContentType.AVIATOR_ORA)
                         .content("abs(signedValue)")
-                        .paramNameList(Collections.singletonList("signedValue"))
                         .build(),
                 // DC003: IF_ELSE THEN 分支——floor 向下取整 * 本金 + ceil 向上取整
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("DC003")
                         .stepName("calc_base")
                         .stepType("DATE")
                         .contentType(AviatorOracleStepContentType.AVIATOR_ORA)
                         .content("floor(calc_months_raw) * principal + ceil(rateInput * calc_abs_val)")
-                        .paramNameList(Arrays.asList("calc_months_raw", "principal", "rateInput", "calc_abs_val"))
                         .build(),
                 // DC004: IF_ELSE ELSE 分支——round 四舍五入 * 本金 - floor 向下取整（本例不会执行）
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("DC004")
                         .stepName("calc_base")
                         .stepType("DATE")
                         .contentType(AviatorOracleStepContentType.AVIATOR_ORA)
                         .content("round(calc_months_raw, 1) * principal - floor(rateInput * calc_abs_val)")
-                        .paramNameList(Arrays.asList("calc_months_raw", "principal", "rateInput", "calc_abs_val"))
                         .build(),
                 // DC005: 日期 + 1.5 天（1.5 天 = 36 小时），测试日期加小数
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("DC005")
                         .stepName("calc_date_shifted")
                         .stepType("DATE")
                         .contentType(AviatorOracleStepContentType.AVIATOR_ORA)
                         .content("startDate + 1.5")
-                        .paramNameList(Collections.singletonList("startDate"))
                         .build(),
                 // DC006: add_months 整月偏移（开始日期 + 6 个月）
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("DC006")
                         .stepName("calc_add_months")
                         .stepType("DATE")
                         .contentType(AviatorOracleStepContentType.AVIATOR_ORA)
                         .content("add_months(startDate, 6)")
-                        .paramNameList(Collections.singletonList("startDate"))
                         .build(),
                 // DC007: last_day 取结束日期所在月份的最后一天
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("DC007")
                         .stepName("calc_last_day")
                         .stepType("DATE")
                         .contentType(AviatorOracleStepContentType.AVIATOR_ORA)
                         .content("last_day(endDate)")
-                        .paramNameList(Collections.singletonList("endDate"))
                         .build(),
                 // DC008: 两个日期相减得到天数差（依赖 PARALLEL 中 calc_last_day，故在其后顺序执行）
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("DC008")
                         .stepName("calc_date_diff")
                         .stepType("DATE")
                         .contentType(AviatorOracleStepContentType.AVIATOR_ORA)
                         .content("calc_last_day - endDate")
-                        .paramNameList(Arrays.asList("calc_last_day", "endDate"))
                         .build(),
                 // DC009: decode + nvl + coalesce，extraFactor 为 null 时全部走 NULL 分支，结果 = 5
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("DC009")
                         .stepName("calc_extra")
                         .stepType("DATE")
                         .contentType(AviatorOracleStepContentType.AVIATOR_ORA)
                         .content("decode(nvl(extraFactor, 5), 5, coalesce(extraFactor, nvl(extraFactor, 5)), 0)")
-                        .paramNameList(Collections.singletonList("extraFactor"))
                         .build(),
                 // DC010: round + power 综合最终计算
                 //        round(expr, 2) 对应 Oracle NUMBER(12,2) 的自动四舍五入效果
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("DC010")
                         .stepName("calc_final")
                         .stepType("DATE")
                         .contentType(AviatorOracleStepContentType.AVIATOR_ORA)
                         .content("round(calc_base + calc_date_diff * calc_extra - power(calc_extra, 2) / calc_abs_val, 2)")
-                        .paramNameList(Arrays.asList("calc_base", "calc_date_diff", "calc_extra", "calc_abs_val"))
                         .build()
         );
 

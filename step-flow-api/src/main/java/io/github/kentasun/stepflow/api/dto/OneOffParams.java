@@ -11,7 +11,7 @@ public class OneOffParams {
     private final Map<String, String> paramNameMap;
 
     // 调用该步骤需要的参数，单独隔离可以防止参数污染。
-    private final Map<String, Object> vars;
+    private Map<String, Object> vars;
 
     public OneOffParams(Map<String, String> paramNameMap, Map<String, Object> vars) {
         this.paramNameMap = paramNameMap;
@@ -28,6 +28,12 @@ public class OneOffParams {
 
     public Map<String, Object> getVars() {
         return this.vars;
+    }
+
+    public void setVars(Map<String, Object> vars) {
+        if (this.vars == null) {
+            this.vars = vars;
+        }
     }
 
     public String toString() {

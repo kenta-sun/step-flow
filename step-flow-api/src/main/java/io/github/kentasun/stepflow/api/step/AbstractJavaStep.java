@@ -9,6 +9,7 @@ import java.util.*;
 
 /**
  * Java 步骤使用的 Java 方法
+ * TODO 想把获取 paramNameList 测操作拿出去，但是 isInit 的安全问题如何解决？
  */
 public abstract class AbstractJavaStep {
 

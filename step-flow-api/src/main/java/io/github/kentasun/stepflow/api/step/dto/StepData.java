@@ -8,25 +8,25 @@ import java.util.List;
 public class StepData {
 
     // 步骤标识
-    private String stepCode;
+    private final String stepCode;
 
     // 步骤名称
-    private String stepName;
+    private final String stepName;
 
     // 步骤类型
-    private String stepType;
+    private final String stepType;
 
     // 内容类型，详情见 StepContentType
-    private String contentType;
+    private final String contentType;
 
     // 步骤内容
-    private String content;
+    private final String content;
 
     /*
      * 该步骤需要的参数名称列表
      * 表达式或javaMethod类型可以有参数。如果公共参数map中的名称不对，需要映射成该列表中的名称。
      */
-    private List<String> paramNameList;
+    private volatile List<String> paramNameList;
 
     // 返回字段列表，多个返回字段配置在这里，否则为空
     private List<String> returnFieldList;
@@ -39,9 +39,6 @@ public class StepData {
         this.content = content;
         this.paramNameList = paramNameList;
         this.returnFieldList = returnFieldList;
-    }
-
-    public StepData() {
     }
 
     public String getStepCode() {
@@ -70,26 +67,6 @@ public class StepData {
 
     public List<String> getReturnFieldList() {
         return this.returnFieldList;
-    }
-
-    public void setStepCode(String stepCode) {
-        this.stepCode = stepCode;
-    }
-
-    public void setStepName(String stepName) {
-        this.stepName = stepName;
-    }
-
-    public void setStepType(String stepType) {
-        this.stepType = stepType;
-    }
-
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
     }
 
     public void setParamNameList(List<String> paramNameList) {

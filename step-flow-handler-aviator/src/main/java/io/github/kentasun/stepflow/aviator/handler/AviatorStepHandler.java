@@ -1,6 +1,9 @@
 package io.github.kentasun.stepflow.aviator.handler;
 
+import com.googlecode.aviator.AviatorEvaluator;
 import com.googlecode.aviator.AviatorEvaluatorInstance;
+import com.googlecode.aviator.Expression;
+import com.googlecode.aviator.Options;
 import io.github.kentasun.stepflow.api.dto.OneOffParams;
 import io.github.kentasun.stepflow.api.step.AbstractStepHandler;
 import io.github.kentasun.stepflow.api.step.StepHandlerCustomizer;
@@ -9,6 +12,8 @@ import io.github.kentasun.stepflow.aviator.AviatorInstanceBuilder;
 import io.github.kentasun.stepflow.aviator.constants.AviatorStepContentType;
 import io.github.kentasun.stepflow.aviator.dto.AviatorStepHandlerProperties;
 
+import java.util.List;
+
 /**
  * Aviator 表达式引擎 步骤处理器
  */
@@ -16,6 +21,8 @@ public class AviatorStepHandler extends AbstractStepHandler {
 
     // 表达式引擎
     private final AviatorEvaluatorInstance aviator;
+    // 参数列表获取引擎
+    private final AviatorEvaluatorInstance varsGetter;
 
     public AviatorStepHandler() {
         this(null, null);
@@ -41,6 +48,13 @@ public class AviatorStepHandler extends AbstractStepHandler {
         if (customizer != null) {
             customizer.customize(this.aviator);
         }
+
+        // 新建独立实例用于解析表达式中的参数列表
+        varsGetter = AviatorEvaluator.newInstance();
+        // 明确关闭表达式缓存
+        varsGetter.setCachedExpressionByDefault(false);
+        // 必须用 EVAL 模式才能拿到变量元数据
+        varsGetter.setOption(Options.OPTIMIZE_LEVEL, AviatorEvaluator.EVAL);
     }
 
     @Override
@@ -49,7 +63,13 @@ public class AviatorStepHandler extends AbstractStepHandler {
     }
 
     @Override
-    public Object execute(StepData stepData, OneOffParams oneOffParams) {
+    public List<String> getParamNameList(StepData stepData) {
+        Expression expression = varsGetter.compile(stepData.getContent());
+        return expression.getVariableNames();
+    }
+
+    @Override
+    public Object doExecute(StepData stepData, OneOffParams oneOffParams) {
         // 表达式
         String expression = stepData.getContent();
         // 执行表达式并返回

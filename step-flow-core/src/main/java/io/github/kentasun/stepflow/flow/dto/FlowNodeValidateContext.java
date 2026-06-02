@@ -1,7 +1,7 @@
 package io.github.kentasun.stepflow.flow.dto;
 
 import io.github.kentasun.stepflow.step.StepExecutor;
-import io.github.kentasun.stepflow.utils.StepFlowUtils;
+import io.github.kentasun.stepflow.api.utils.StepFlowUtils;
 
 import java.util.ArrayList;
 import java.util.List;

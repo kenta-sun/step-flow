@@ -4,15 +4,16 @@ import io.github.kentasun.stepflow.api.dto.OneOffParams;
 import io.github.kentasun.stepflow.api.step.AbstractStepHandler;
 import io.github.kentasun.stepflow.api.step.StepHandlerCustomizer;
 import io.github.kentasun.stepflow.api.step.dto.StepData;
+import io.github.kentasun.stepflow.api.utils.StepFlowUtils;
 import io.github.kentasun.stepflow.jexl.JexlInstanceBuilder;
 import io.github.kentasun.stepflow.jexl.constants.JexlStepContentType;
 import io.github.kentasun.stepflow.jexl.dto.JexlStepHandlerProperties;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.JexlExpression;
+import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  * JEXL 表达式引擎 步骤处理器
@@ -50,13 +51,32 @@ public class JexlStepHandler extends AbstractStepHandler {
     }
 
     @Override
-    public Object execute(StepData stepData, OneOffParams oneOffParams) {
+    public List<String> getParamNameList(StepData stepData) {
+        // 解析 jexl 脚本
+        String expression = stepData.getContent();
+        JexlScript script = this.jexl.createScript(expression);
+        // 获取参数的路径set
+        Set<List<String>> jexlVars = script.getVariables();
+        if (StepFlowUtils.isEmpty(jexlVars)) {
+            return Collections.emptyList();
+        }
+        // 根据参数路径set，得到 rootName 的集合
+        Set<String> varSet = new HashSet<>();
+        for (List<String> varPath : jexlVars) {
+            // 将 ["user", "name"] 获取第一个，即是 rootName，作为 paramName
+            varSet.add(varPath.get(0));
+        }
+        return new ArrayList<>(varSet);
+    }
+
+    @Override
+    public Object doExecute(StepData stepData, OneOffParams oneOffParams) {
         // 表达式
         String expression = stepData.getContent();
         // 执行表达式并返回
         Map<String, Object> vars = oneOffParams.getVars();
-        JexlExpression script = this.jexl.createExpression(expression);
-        return script.evaluate(new MapContext(vars));
+        JexlScript script = this.jexl.createScript(expression);
+        return script.execute(new MapContext(vars));
     }
 
     @Override

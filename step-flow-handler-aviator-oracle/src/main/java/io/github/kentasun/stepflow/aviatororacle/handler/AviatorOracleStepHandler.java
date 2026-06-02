@@ -1,6 +1,9 @@
 package io.github.kentasun.stepflow.aviatororacle.handler;
 
+import com.googlecode.aviator.AviatorEvaluator;
 import com.googlecode.aviator.AviatorEvaluatorInstance;
+import com.googlecode.aviator.Expression;
+import com.googlecode.aviator.Options;
 import io.github.kentasun.aviatororacle.AviatorOracleBuilder;
 import io.github.kentasun.stepflow.api.dto.OneOffParams;
 import io.github.kentasun.stepflow.api.step.AbstractStepHandler;
@@ -9,6 +12,8 @@ import io.github.kentasun.stepflow.api.step.dto.StepData;
 import io.github.kentasun.stepflow.aviatororacle.constants.AviatorOracleStepContentType;
 import io.github.kentasun.stepflow.aviatororacle.dto.AviatorOracleStepHandlerProperties;
 
+import java.util.List;
+
 /**
  * aviator-oracle 表达式引擎 步骤处理器
  */
@@ -16,6 +21,8 @@ public class AviatorOracleStepHandler extends AbstractStepHandler {
 
     // 表达式引擎
     private final AviatorEvaluatorInstance aviatorOra;
+    // 参数列表获取引擎
+    private final AviatorEvaluatorInstance varsGetter;
 
     public AviatorOracleStepHandler() {
         this(null, null);
@@ -45,6 +52,13 @@ public class AviatorOracleStepHandler extends AbstractStepHandler {
         if (customizer != null) {
             customizer.customize(this.aviatorOra);
         }
+
+        // 新建独立实例用于解析表达式中的参数列表
+        varsGetter = AviatorEvaluator.newInstance();
+        // 明确关闭表达式缓存
+        varsGetter.setCachedExpressionByDefault(false);
+        // 必须用 EVAL 模式才能拿到变量元数据
+        varsGetter.setOption(Options.OPTIMIZE_LEVEL, AviatorEvaluator.EVAL);
     }
 
     @Override
@@ -53,7 +67,13 @@ public class AviatorOracleStepHandler extends AbstractStepHandler {
     }
 
     @Override
-    public Object execute(StepData stepData, OneOffParams oneOffParams) {
+    public List<String> getParamNameList(StepData stepData) {
+        Expression expression = varsGetter.compile(stepData.getContent());
+        return expression.getVariableNames();
+    }
+
+    @Override
+    public Object doExecute(StepData stepData, OneOffParams oneOffParams) {
         // 表达式
         String expression = stepData.getContent();
         // 执行表达式并返回

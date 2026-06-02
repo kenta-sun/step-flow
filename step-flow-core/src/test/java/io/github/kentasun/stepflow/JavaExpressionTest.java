@@ -4,14 +4,9 @@ import io.github.kentasun.stepflow.api.flow.FlowProvider;
 import io.github.kentasun.stepflow.api.flow.dto.InputFlow;
 import io.github.kentasun.stepflow.api.step.AbstractJavaStep;
 import io.github.kentasun.stepflow.api.step.StepDataProvider;
-import io.github.kentasun.stepflow.api.step.dto.StepData;
+import io.github.kentasun.stepflow.api.step.dto.StepInputData;
 import io.github.kentasun.stepflow.dto.CalcDTO;
-import io.github.kentasun.stepflow.javaMethod.Add;
-import io.github.kentasun.stepflow.javaMethod.ChooseRes;
-import io.github.kentasun.stepflow.javaMethod.Condition1;
-import io.github.kentasun.stepflow.javaMethod.Divide;
-import io.github.kentasun.stepflow.javaMethod.Multiply;
-import io.github.kentasun.stepflow.javaMethod.Subtract;
+import io.github.kentasun.stepflow.javaMethod.*;
 import io.github.kentasun.stepflow.step.constants.StepContentType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -32,53 +27,47 @@ public class JavaExpressionTest {
     @Test
     public void stepFlowExecutorTest() {
         StepDataProvider stepDataProvider = () -> Arrays.asList(
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("COMMON001")
                         .stepName("add")
                         .stepType("COMMON")
                         .contentType(StepContentType.JAVA)
                         .content("add")
-                        .paramNameList(Arrays.asList("a", "b"))
                         .build(),
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("COMMON002")
                         .stepName("subtract")
                         .stepType("COMMON")
                         .contentType(StepContentType.JAVA)
                         .content("subtract")
-                        .paramNameList(Arrays.asList("a", "b"))
                         .build(),
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("COMMON003")
                         .stepName("multiply")
                         .stepType("COMMON")
                         .contentType(StepContentType.JAVA)
                         .content("multiply")
-                        .paramNameList(Arrays.asList("a", "b"))
                         .build(),
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("CONDITION001")
                         .stepName("condition1")
                         .stepType("CONDITION")
                         .contentType(StepContentType.JAVA)
                         .content("condition1")
-                        .paramNameList(Arrays.asList("calc_add", "calc_subtract"))
                         .build(),
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("COMMON004")
                         .stepName("divide")
                         .stepType("COMMON")
                         .contentType(StepContentType.JAVA)
                         .content("divide")
-                        .paramNameList(Arrays.asList("a", "b"))
                         .build(),
-                StepData.builder()
+                StepInputData.builder()
                         .stepCode("JAVA001")
                         .stepName("calc_Hades_res")
                         .stepType("JAVA")
                         .contentType(StepContentType.JAVA)
                         .content("chooseRes")
-                        .paramNameList(Arrays.asList("calc_multiply", "calc_divide"))
                         .build()
         );
 

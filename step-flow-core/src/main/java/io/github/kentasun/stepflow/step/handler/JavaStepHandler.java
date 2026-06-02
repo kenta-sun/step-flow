@@ -1,13 +1,14 @@
 package io.github.kentasun.stepflow.step.handler;
 
 import io.github.kentasun.stepflow.api.dto.OneOffParams;
+import io.github.kentasun.stepflow.api.exception.StepFlowException;
 import io.github.kentasun.stepflow.api.step.AbstractJavaStep;
 import io.github.kentasun.stepflow.api.step.AbstractStepHandler;
 import io.github.kentasun.stepflow.api.step.dto.StepData;
-import io.github.kentasun.stepflow.api.exception.StepFlowException;
+import io.github.kentasun.stepflow.api.utils.StepFlowUtils;
 import io.github.kentasun.stepflow.step.constants.StepContentType;
-import io.github.kentasun.stepflow.utils.StepFlowUtils;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,7 +33,14 @@ public class JavaStepHandler extends AbstractStepHandler {
     }
 
     @Override
-    public Object execute(StepData stepData, OneOffParams oneOffParams) {
+    public List<String> getParamNameList(StepData stepData) {
+        String beanName = stepData.getContent();
+        AbstractJavaStep javaStep = this.methodMap.get(beanName);
+        return javaStep.getParamNameList();
+    }
+
+    @Override
+    public Object doExecute(StepData stepData, OneOffParams oneOffParams) {
         String beanName = stepData.getContent();
         AbstractJavaStep javaStep = this.methodMap.get(beanName);
         if (javaStep == null) {

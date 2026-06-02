@@ -1,7 +1,7 @@
 package io.github.kentasun.stepflow.flow.dto.node;
 
 import io.github.kentasun.stepflow.flow.dto.FlowNodeValidateContext;
-import io.github.kentasun.stepflow.utils.StepFlowUtils;
+import io.github.kentasun.stepflow.api.utils.StepFlowUtils;
 
 /**
  * IF_ELSE 流程节点中的一条分支：{@code IF/ELSIF(条件)} 与紧随其后的 {@code THEN(分支体)}。

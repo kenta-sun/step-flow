@@ -1,4 +1,4 @@
-package io.github.kentasun.stepflow.utils;
+package io.github.kentasun.stepflow.api.utils;
 
 import java.util.Collection;
 import java.util.Map;

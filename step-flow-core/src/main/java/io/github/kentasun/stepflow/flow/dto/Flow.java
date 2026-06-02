@@ -3,7 +3,7 @@ package io.github.kentasun.stepflow.flow.dto;
 import io.github.kentasun.stepflow.api.dto.StepFlowContext;
 import io.github.kentasun.stepflow.dto.ExecutorsContext;
 import io.github.kentasun.stepflow.flow.dto.node.FlowNode;
-import io.github.kentasun.stepflow.utils.StepFlowUtils;
+import io.github.kentasun.stepflow.api.utils.StepFlowUtils;
 
 import java.util.HashMap;
 import java.util.List;

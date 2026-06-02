@@ -1,6 +1,6 @@
 package io.github.kentasun.stepflow.api.step;
 
-import io.github.kentasun.stepflow.api.step.dto.StepData;
+import io.github.kentasun.stepflow.api.step.dto.StepInputData;
 
 import java.util.List;
 
@@ -14,5 +14,5 @@ public interface StepDataProvider {
      *
      * @return 已拼装完成的 StepData 列表
      */
-    List<StepData> loadStepDataList();
+    List<StepInputData> loadStepDataList();
 }

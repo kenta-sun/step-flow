@@ -11,7 +11,7 @@ import io.github.kentasun.stepflow.step.handler.JavaStepHandler;
 import io.github.kentasun.stepflow.api.step.AbstractJavaStep;
 import io.github.kentasun.stepflow.api.step.StepDataProvider;
 import io.github.kentasun.stepflow.threadpool.StepFlowThreadPoolFactory;
-import io.github.kentasun.stepflow.utils.StepFlowUtils;
+import io.github.kentasun.stepflow.api.utils.StepFlowUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
