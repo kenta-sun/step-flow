@@ -42,14 +42,14 @@ public class StepFlowNodeBuilder implements FlowNodeBuilder {
                             SlfKeyWords.STEP + " 不允许重复声明 ." + SlfKeyWords.PARAM
                                     + "(...)，位置: " + suffix.formatLocation());
                 }
-                paramNameMap = parseMappingList(parser, SlfKeyWords.PARAM);
+                paramNameMap = this.parseMappingList(parser, SlfKeyWords.PARAM);
             } else if (suffix.isKeyword(SlfKeyWords.RESULT)) {
                 if (resultNameMap != null) {
                     throw new SflException(
                             SlfKeyWords.STEP + " 不允许重复声明 ." + SlfKeyWords.RESULT
                                     + "(...)，位置: " + suffix.formatLocation());
                 }
-                resultNameMap = parseMappingList(parser, SlfKeyWords.RESULT);
+                resultNameMap = this.parseMappingList(parser, SlfKeyWords.RESULT);
             } else {
                 throw new SflException(
                         SlfKeyWords.STEP + " 后缀未知 [" + suffix.getText() + "]，仅支持 "
